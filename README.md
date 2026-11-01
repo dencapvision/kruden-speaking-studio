@@ -78,10 +78,20 @@ src/storage.js     จัดการการอ่าน/เขียน local
 src/main.jsx       หน้าจอหลักและการจัดการสถานะ
 src/components.jsx สไลด์ ตัวแก้ไข โหมดนำเสนอ ห้องซ้อม
 src/styles.css    ธีม responsive และ print stylesheet
+functions/api/     Cloudflare Pages Functions สำหรับเชื่อมต่อ DeepSeek AI ฝั่ง Serverless
 tests/            ทดสอบตรรกะสำคัญและระบบ Storage
 public/           SPA redirects และ HTTP security headers
 .env.example      ตัวอย่างการตั้งค่าสภาพแวดล้อมสำหรับต่อยอดในอนาคต
 ```
+
+## การเปิดใช้งาน DeepSeek AI บน Cloudflare Pages
+
+1. ไปที่ [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → เลือกโปรเจกต์ `kruden-speaking-studio`
+2. ไปที่เมนู **Settings** → **Environment variables**
+3. เพิ่ม Environment Variable:
+   - `DEEPSEEK_API_KEY`: ใส่ DeepSeek API Key ของคุณ (ประเภท Encrypted / Secret)
+   - `STUDENT_PASSCODE`: (ตัวเลือก) ตั้งรหัสผ่านห้องเรียนสำหรับผู้เรียน เช่น `kruden2026`
+4. เมื่อตั้งค่าแล้ว ผู้เรียนสามารถกรอกรหัสผ่านห้องเรียนเพื่อใช้งาน AI ได้ทันที หรือสามารถนำ DeepSeek API Key ส่วนตัวมากรอกเองในหน้าเว็บ (BYOK) ได้เช่นกัน
 
 ## แนวทางต่อยอด
 

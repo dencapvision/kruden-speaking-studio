@@ -71,3 +71,31 @@ export function exportSlidesMarkdown(slides) {
   triggerDownload('kruden-slides.md', md, 'text/markdown;charset=utf-8');
 }
 
+export const SETTINGS_KEY = 'kruden-speaking-settings-v1';
+
+export function getAiSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { passcode: '', customApiKey: '' };
+    const parsed = JSON.parse(raw);
+    return {
+      passcode: typeof parsed.passcode === 'string' ? parsed.passcode : '',
+      customApiKey: typeof parsed.customApiKey === 'string' ? parsed.customApiKey : ''
+    };
+  } catch {
+    return { passcode: '', customApiKey: '' };
+  }
+}
+
+export function saveAiSettings(settings) {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+      passcode: settings.passcode ? settings.passcode.trim() : '',
+      customApiKey: settings.customApiKey ? settings.customApiKey.trim() : ''
+    }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
