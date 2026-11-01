@@ -544,7 +544,7 @@ function App(){
               <div>
                 <p className="eyebrow">SCRIPT LAB · 5Ps PROCESS</p>
                 <h1>Script Lab: วางประเด็นให้ชัด ก่อนเริ่มพูด<span className="heading-dot">.</span></h1>
-                <p>เตรียมบทพูดและวิเคราะห์ 5 กระบวนการ (5Ps Process) สำหรับ 3 เวทีจริง พร้อม DeepSeek AI</p>
+                <p>เตรียมบทพูดและวิเคราะห์ 5 กระบวนการ (5Ps Process) สำหรับ 3 เวทีจริง พร้อม Kruden AI</p>
               </div>
               <div className="toolbar">
                 <button className="btn" onClick={fillPresetScenario} title="โหลดสถานการณ์ตัวอย่างจริงของเวทีนี้">
@@ -679,7 +679,7 @@ function App(){
 
                   <button className="btn ai-btn full" disabled={aiLoading} onClick={generateAiScript}>
                     {aiLoading?<Loader2 className="spin" size={18}/>:<Sparkles size={18}/>}
-                    {aiLoading?'กำลังประมวลผลบทพูดด้วย DeepSeek AI...':'✨ ให้ DeepSeek AI ช่วยร่างบทพูดตาม 5Ps'}
+                    {aiLoading?'กำลังประมวลผลบทพูดด้วย Kruden AI...':'✨ ให้ Kruden AI ช่วยร่างบทพูด'}
                   </button>
 
                   <button className="btn full" onClick={()=>{setPrompt(makePrompt(data.form,data.sources.filter(s=>selectedSources.includes(s.id))));setAiTab('template');notify('สร้างแม่แบบพรอมป์ต์ 5Ps จากข้อมูลของคุณแล้ว');}}>
@@ -718,7 +718,7 @@ function App(){
                 </>:<div className="prompt-empty">
                   <span><Bot size={36}/></span>
                   <h3>ยังไม่มีบทพูดจาก AI</h3>
-                  <p>กรอกข้อมูลหัวข้อและวิเคราะห์ 5Ps ทางซ้ายมือ<br/>แล้วกด <strong>“✨ ให้ DeepSeek AI ช่วยร่างบทพูดตาม 5Ps”</strong></p>
+                  <p>กรอกข้อมูลหัวข้อและวิเคราะห์ 5Ps ทางซ้ายมือ<br/>แล้วกด <strong>“✨ ให้ Kruden AI ช่วยร่างบทพูด”</strong></p>
                   <p className="fine">ระบบจะประมวลผลผ่าน Cloudflare Pages Functions อย่างปลอดภัย</p>
                 </div>):(prompt?<>
                   <div className="toolbar result-actions">
@@ -938,7 +938,7 @@ function App(){
                 <div className="ai-polish-bar">
                   <div className="ai-polish-title">
                     <Sparkles size={16}/>
-                    <strong>DeepSeek AI เกลาบทพูด & วิเคราะห์ประเด็น:</strong>
+                    <strong>Kruden AI เกลาบทพูด & วิเคราะห์ประเด็น:</strong>
                   </div>
                   <div className="toolbar">
                     <button
@@ -977,7 +977,7 @@ function App(){
                     <div className="ai-polish-result-head">
                       <h3>
                         <Sparkles size={16}/>
-                        {aiAssistantResult.action==='polish'?'ผลลัพธ์การเกลาบทพูดด้วย DeepSeek AI':
+                        {aiAssistantResult.action==='polish'?'ผลลัพธ์การเกลาบทพูดด้วย Kruden AI':
                          aiAssistantResult.action==='hooks'?'ประโยคเปิด (Hooks) และ ประโยคจำ (Soundbites)':
                          'การวิเคราะห์ประเด็นอภิปราย & แนวทางตอบกลับ'}
                       </h3>
