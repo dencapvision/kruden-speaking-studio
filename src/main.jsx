@@ -8,7 +8,7 @@ import {loadStoredState,saveStoredState,triggerDownload,exportBackupJson,exportS
 import {SlideVisual,SlideEditor,Presenter,Modal,Rehearsal} from './components.jsx';
 import './styles.css';
 
-const nav=[['home',LayoutDashboard,'ภาพรวมสตูดิโอ','Overview'],['slides',Presentation,'สไลด์สอน','Slide studio'],['prompts',Sparkles,'สร้างพรอมป์ต์','Prompt builder'],['script',FileText,'พื้นที่เขียนบท','Script workspace'],['rehearsal',Radio,'ห้องซ้อมพูด','Practice room'],['sources',Library,'แหล่งข้อมูล','Evidence library']];
+const nav=[['home',LayoutDashboard,'ภาพรวมสตูดิโอ','Overview'],['slides',Presentation,'สไลด์สอน','Slide studio'],['prompts',Sparkles,'Script Lab & 5Ps','Script Lab'],['script',FileText,'พื้นที่เขียนบท','Script workspace'],['rehearsal',Radio,'ห้องซ้อมพูด','Practice room'],['sources',Library,'แหล่งข้อมูล','Evidence library']];
 function App(){
   const [initialResult]=useState(()=>loadStoredState());
   const [data,setData]=useState(initialResult.state);
@@ -77,6 +77,22 @@ function App(){
     }
   };
 
+  const fillPresetScenario=()=>{
+    const m=data.form.mode;
+    if(m==='formal'||m==='speech'){
+      setData(d=>({...d,form:{...d.form,mode:'formal',topic:'พิธีเปิดเวิร์กช็อป Public Speaking & Professional MC Skills',keyMessage:'ยินดีต้อนรับผู้เข้าร่วมทุกท่าน และร่วมสร้างพื้นที่ปลอดภัยเพื่อปลดล็อกพลังการสื่อสาร',duration:3,tone:'อบอุ่น ชัดเจน ให้เกียรติผู้ฟัง',purpose:'กล่าวต้อนรับแขกผู้มีเกียรติและเปิดเวิร์กช็อปอย่างเป็นทางการและน่าเชื่อถือ',product:'ผู้เข้าร่วมทุกคนเข้าใจเป้าหมาย 3 ชั่วโมงและพร้อมลงมือฝึกจริง',participants:'ผู้เรียน 20 ท่านจากหลากหลายสายอาชีพที่ตั้งใจพัฒนาการพูด',problems:'ผู้เรียนอาจตื่นเต้นหรือประหม่า เริ่มด้วยรอยยิ้ม สบตา และน้ำเสียงอบอุ่น',planTopics:'1. กล่าวทักทายและต้อนรับแขกผู้มีเกียรติ\n2. ความสำคัญของทักษะการพูด (5P)\n3. กำหนดการและกิจกรรมตลอด 3 ชม.',planExamples:'1. ยินดีต้อนรับสู่ KRUDEN Speaking Studio\n2. การพูดคือทักษะที่ฝึกได้ ไม่ใช่พรสวรรค์\n3. 09.00-12.00 น. ลงมือฝึกจริงทุกช่วง'}}));
+      notify('โหลดตัวอย่างสถานการณ์: เวทีพิธีการ (กล่าวต้อนรับ)');
+    }else if(m==='community'||m==='listening'){
+      setData(d=>({...d,form:{...d.form,mode:'community',topic:'เวทีรับฟังความคิดเห็นเพื่อการพัฒนาพื้นที่ส่วนกลางในชุมชน',keyMessage:'เปิดพื้นที่รับฟังทุกเสียงอย่างเท่าเทียม เพื่อร่วมออกแบบชุมชนที่มีชีวิต',duration:5,tone:'อธิบายง่าย พร้อมรับฟังความเห็นต่าง',purpose:'รับฟังความต้องการ ปัญหา และข้อเสนอแนะในการปรับปรุงพื้นที่ส่วนกลาง',product:'ได้ข้อสรุป 3 ประเด็นสำคัญที่คนในชุมชนเห็นพ้องร่วมกัน',participants:'ชาวบ้านในพื้นที่ ผู้นำชุมชน กลุ่มเยาวชน และผู้สูงอายุ',problems:'อาจมีความเห็นต่างเรื่องการใช้ประโยชน์ ต้องเน้นรับฟัง ไม่ตัดสิน และบันทึกข้อเท็จจริง',planTopics:'1. เปิดเวทีและตั้งกติกาพื้นที่ปลอดภัย\n2. ชวนคุยประสบการณ์และปัญหาที่พบ\n3. เปิดรับข้อเสนอแนะและก้าวต่อไป',planExamples:'1. ทุกเสียงมีคุณค่า ไม่มีการตัดสินถูกผิด\n2. ปัญหาไฟส่องสว่างและความสะอาด\n3. ร่วมโหวตแนวทางทดลองทำใน 30 วัน'}}));
+      notify('โหลดตัวอย่างสถานการณ์: เวทีชุมชน (เปิดรับฟัง)');
+    }else if(m==='panel'||m==='debate'){
+      setData(d=>({...d,form:{...d.form,mode:'panel',topic:'เวทีเสวนา: อนาคตการสื่อสารในยุค AI และพลังของ Human Touch',keyMessage:'AI เป็นเครื่องมือเสริมพลัง แต่หัวใจความเข้าใจมนุษย์คือสิ่งที่แทนไม่ได้',duration:5,tone:'เป็นทางการ กระชับ ตรงประเด็น',purpose:'เกริ่นนำประเด็น แนะนำวิทยากร 3 ท่าน และดำเนินรายการเสวนาอย่างลื่นไหล',product:'ผู้ฟังได้แนวทางนำ AI ไปประยุกต์ใช้โดยไม่สูญเสียความจริงใจ',participants:'คนทำงานรุ่นใหม่ นักศึกษา และผู้บริหารองค์กร',problems:'เวลาตอบอาจบานปลาย ต้องกำหนดกติกาคนละ 2 นาทีและคุมจังหวะสุภาพ',planTopics:'1. เกริ่นนำความท้าทายในยุค AI\n2. แนะนำวิทยากรผู้ทรงคุณวุฒิ 3 ท่าน\n3. โยนคำถามแรกเพื่อเปิดมุมมอง',planExamples:'1. เทคโนโลยีเปลี่ยนเร็ว แต่การฟังด้วยใจยังสำคัญ\n2. ผู้เชี่ยวชาญ AI, นักจิตวิทยา, นักสื่อสารมวลชน\n3. ทักษะใดที่ AI ยังสู้ความเข้าใจมนุษย์ไม่ได้?'}}));
+      notify('โหลดตัวอย่างสถานการณ์: เวทีเสวนา (แนะนำผู้พูด)');
+    }else{
+      notify('เลือกโหมดพิธีการ ชุมชน หรือเสวนา เพื่อดูตัวอย่างสถานการณ์จริง');
+    }
+  };
+
   const importFile=async e=>{
     const file=e.target.files[0];
     e.target.value='';
@@ -112,13 +128,66 @@ function App(){
     {storageError&&<div className="error-banner" role="alert">{storageError}</div>}
   {page==='home'&&<><div className="page-heading"><div><p className="eyebrow">YOUR VOICE, WITH PURPOSE</p><h1>พื้นที่สร้างพลังการสื่อสาร<span className="heading-dot">.</span></h1><p>จัดสไลด์ให้ชัด เตรียมบทให้พร้อม แล้วพาเสียงของคุณไปไกลกว่าเดิม</p></div><button className="btn primary" onClick={()=>go('prompts')}><Plus size={18}/> เริ่มเตรียมการพูด</button></div><section className="hero-workshop"><div className="hero-left"><div className="hero-topline"><span className="tag light">WORKSHOP COLLECTION</span><span>01 / PUBLIC SPEAKING</span></div><h2>พูดอย่างมืออาชีพ<br/><span>สื่อสารอย่างมั่นใจ</span></h2><p>บทเรียนและกิจกรรมฝึกจริง เพื่อทุกเวทีที่คุณอยากสื่อสารให้เข้าใจ</p><div className="hero-meta"><span><Presentation size={17}/>{data.slides.length} สไลด์</span><span><Clock size={17}/>3 ชั่วโมง</span><span><BookOpen size={17}/>5P Framework</span></div><div className="hero-actions"><button className="btn cream" onClick={()=>go('slides')}>เปิดชุดสไลด์สอน <ArrowRight size={18}/></button><button className="hero-present" onClick={()=>setPresent(0)}><Play size={17}/> เริ่มนำเสนอ</button></div></div><div className="hero-poster"><span className="poster-circle c1"/><span className="poster-circle c2"/><Mic2 className="poster-mic" strokeWidth={1}/><span className="poster-word">SPEAK<br/><em>with purpose.</em></span><span className="poster-note">HUMAN • HEART • HARMONY</span></div></section><section className="quick-metrics"><div><span className="metric-icon"><Presentation/></span><div><strong>{data.slides.length}</strong><span>สไลด์ที่พร้อมแก้ไข</span></div></div><div><span className="metric-icon"><Sparkles/></span><div><strong>05</strong><span>รูปแบบการสื่อสาร</span></div></div><div><span className="metric-icon"><FileText/></span><div><strong>{String(data.drafts.length).padStart(2,'0')}</strong><span>บทพูดที่บันทึกไว้</span></div></div><div><span className="metric-icon"><Library/></span><div><strong>{String(data.sources.length).padStart(2,'0')}</strong><span>แหล่งข้อมูลประกอบ</span></div></div></section><div className="section-heading"><div><p className="eyebrow">FROM IDEA TO IMPACT</p><h2>วันนี้ คุณจะสื่อสารบนเวทีไหน?</h2></div><button className="link-button" onClick={()=>go('prompts')}>ดูพรอมป์ต์ทั้งหมด <ArrowRight size={16}/></button></div><div className="mode-list">{MODES.map((m,i)=><button className="mode-entry" key={m.id} onClick={()=>startPrompt(m.id)}><span className="mode-number">0{i+1}</span><div><h3>{m.name}</h3><p>{m.desc}</p></div><ArrowUpRight size={22}/></button>)}</div><div className="home-bottom"><section className="agenda-panel"><div className="section-heading"><h2>เส้นทางเวิร์กช็อป</h2><span className="fine">09.00–12.00 น.</span></div>{agenda.map(([time,label,min])=><div className="agenda-row" key={time}><time>{time}</time><span>{label}</span><small>{min} นาที</small></div>)}</section><section className="principle-panel"><ShieldCheck size={30}/><h2>สื่อสารด้วยความเข้าใจ<br/>และความรับผิดชอบ</h2><p>แยกข้อเท็จจริงออกจากข้อเสนอ อ้างที่มาของข้อมูล และเปิดพื้นที่ให้ความเห็นต่างได้มีเสียง</p><button className="link-button" onClick={()=>go('sources')}>จัดการแหล่งข้อมูล <ArrowRight size={17}/></button><small>ชุดสไลด์จัดเรียงใหม่จาก Canva และเสริมคำถามสะท้อนคิด การแก้ไขในเว็บไม่ซิงก์กลับ Canva</small></section></div></>}
   {page==='slides'&&<><div className="page-heading"><div><p className="eyebrow">SLIDE STUDIO</p><h1>หนึ่งหน้า หนึ่งประเด็น<span className="heading-dot">.</span></h1><p>คลังสไลด์เวิร์กช็อปที่แก้ไข จัดลำดับ และนำเสนอได้</p></div><div className="toolbar"><button className="btn" onClick={exportSlides}><Download size={17}/> Markdown</button><button className="btn primary" onClick={addSlide}><Plus size={18}/> เพิ่มสไลด์</button></div></div><div className="course-strip"><div className="course-strip-icon"><Presentation/></div><div><strong>Public Speaking & Professional MC Skills</strong><span>ครูเด่น มาสเตอร์ฟา · {data.slides.length} สไลด์ · พัก 10.30–10.45 น.</span></div><button className="btn" onClick={()=>window.print()}><Printer size={17}/> พิมพ์ / PDF</button><button className="btn primary" onClick={()=>setPresent(0)}><Play size={16}/> นำเสนอ</button></div><div className="filters"><div className="search-field"><Search size={18}/><input type="search" aria-label="ค้นหาสไลด์" placeholder="ค้นหาหัวข้อหรือคำสำคัญ..." value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="filter-tabs">{[...new Set([...GROUPS,...data.slides.map(s=>s.group)])].map(g=><button aria-pressed={g===group} className={g===group?'active':''} key={g} onClick={()=>setGroup(g)}>{g}</button>)}</div></div><div className="results-heading"><span>{group==='ทั้งหมด'?'สไลด์ทั้งหมด':group} <b>{filtered.length}</b></span><span className="fine">ภาพตัวอย่างเป็นสไลด์ที่สร้างใหม่ในเว็บ</span></div>{!filtered.length?<div className="empty-state"><Search size={32}/><h2>ไม่พบสไลด์ที่ค้นหา</h2><button className="btn" onClick={()=>{setQuery('');setGroup('ทั้งหมด');}}>แสดงทั้งหมด</button></div>:<div className="slide-grid">{filtered.map(s=>{const idx=data.slides.findIndex(x=>x.id===s.id);return <article className="slide-card" key={s.id}><button className="slide-preview" aria-label={`ดูสไลด์ ${s.title}`} onClick={()=>setSelected(s)}><SlideVisual slide={s} small/><span className="preview-overlay"><Play size={22}/> ดูสไลด์</span></button><div className="slide-card-body"><div className="slide-card-title"><span>{String(idx+1).padStart(2,'0')}</span><h2>{s.title}</h2></div><div className="row-between"><span className={`kind-tag ${s.kind==='activity'?'practice':''}`}>{s.kind==='activity'?'ฝึกปฏิบัติ':s.kind==='scenario'?'สถานการณ์':s.group}</span><div className="slide-tools"><button className="icon-btn" aria-label={`แก้ไข ${s.title}`} onClick={()=>setEditing(s)}><Pencil size={16}/></button><button className="icon-btn" aria-label={`เลื่อน ${s.title} ขึ้น`} disabled={idx===0} onClick={()=>moveSlide(s.id,-1)}><MoveUp size={16}/></button><button className="icon-btn" aria-label={`เลื่อน ${s.title} ลง`} disabled={idx===data.slides.length-1} onClick={()=>moveSlide(s.id,1)}><MoveDown size={16}/></button><button className="icon-btn danger" aria-label={`ลบ ${s.title}`} disabled={data.slides.length===1} onClick={()=>setDeleteId(s.id)}><Trash2 size={16}/></button></div></div></div></article>})}</div>}</>}
-  {page==='prompts'&&<><div className="page-heading"><div><p className="eyebrow">PROMPT BUILDER</p><h1>วางประเด็นให้ชัด ก่อนเริ่มพูด<span className="heading-dot">.</span></h1><p>สร้างพรอมป์ต์หรือให้ DeepSeek AI ช่วยร่างบทพูดตามแนวทาง Human • Heart • Harmony</p></div><span className="outline-badge"><ShieldCheck size={16}/> สื่อสารสาธารณะอย่างสร้างสรรค์</span></div><div className="mode-switch">{MODES.map(m=><button key={m.id} aria-pressed={data.form.mode===m.id} className={data.form.mode===m.id?'active':''} onClick={()=>{patchForm('mode',m.id);setPrompt('');setAiResult('');}}>{m.short}</button>)}</div><div className="builder-grid"><section className="panel builder-form"><div className="panel-heading"><span className="step-no">01</span><div><h2>{modeFor(data.form.mode).name}</h2><p>{modeFor(data.form.mode).desc}</p></div></div><div className="form-stack"><label>หัวข้อการสื่อสาร<input maxLength={300} value={data.form.topic} onChange={e=>patchForm('topic',e.target.value)} placeholder="เช่น แนวทางพัฒนาระบบขนส่งสาธารณะ"/></label><div className="form-row"><label>เวลาพูด (นาที)<input type="number" min={1} max={60} value={data.form.duration} onChange={e=>patchForm('duration',Math.min(60,Math.max(1,+e.target.value||1)))}/></label><label>น้ำเสียง<select value={data.form.tone} onChange={e=>patchForm('tone',e.target.value)}>{['อบอุ่น ชัดเจน ให้เกียรติผู้ฟัง','เป็นทางการ กระชับ ตรงประเด็น','อธิบายง่าย พร้อมรับฟังความเห็นต่าง'].map(t=><option key={t}>{t}</option>)}</select></label></div><label>บริบทของเวที<input maxLength={1000} value={data.form.context} onChange={e=>patchForm('context',e.target.value)}/><small>ระบุประเภทเวทีและความรู้พื้นฐาน โดยไม่ใช้ข้อมูลส่วนบุคคลเพื่อเจาะกลุ่มทางการเมือง</small></label><label>สารสำคัญที่อยากให้เข้าใจ<textarea rows={2} maxLength={3000} value={data.form.keyMessage} onChange={e=>patchForm('keyMessage',e.target.value)}/></label>{data.form.mode==='media'&&<label>คำถามจากสื่อ<textarea rows={2} value={data.form.question} maxLength={3000} onChange={e=>patchForm('question',e.target.value)}/></label>}<label>ข้อเท็จจริงและข้อมูลประกอบ<textarea rows={4} maxLength={15000} value={data.form.facts} onChange={e=>patchForm('facts',e.target.value)} placeholder="วางข้อมูลพร้อมที่มา วันที่ และข้อจำกัดของข้อมูล..."/><small>ระบบยังไม่ได้ตรวจสอบข้อเท็จจริงภายนอกให้</small></label><label>ข้อจำกัด / เรื่องที่ต้องตรวจสอบ<textarea rows={2} maxLength={3000} value={data.form.limits} onChange={e=>patchForm('limits',e.target.value)}/></label><fieldset><legend>เลือกแหล่งข้อมูลแนบพรอมป์ต์</legend>{data.sources.length?data.sources.map(s=><label className="checkbox-label" key={s.id}><input type="checkbox" checked={selectedSources.includes(s.id)} onChange={e=>setSelectedSources(e.target.checked?[...selectedSources,s.id]:selectedSources.filter(id=>id!==s.id))}/><span>{s.title}</span></label>):<p className="fine">ยังไม่มีแหล่งข้อมูล เพิ่มได้ที่เมนูแหล่งข้อมูล</p>}</fieldset>
+  {page==='prompts'&&<><div className="page-heading"><div><p className="eyebrow">SCRIPT LAB · 5Ps PROCESS</p><h1>Script Lab: วางประเด็นให้ชัด ก่อนเริ่มพูด<span className="heading-dot">.</span></h1><p>เตรียมบทพูดและวิเคราะห์ 5 กระบวนการ (5Ps Process) สำหรับ 3 เวทีจริง พร้อม DeepSeek AI</p></div><div className="toolbar"><button className="btn" onClick={fillPresetScenario} title="โหลดสถานการณ์ตัวอย่างจริงของเวทีนี้"><Sparkles size={16}/> โหลดตัวอย่างสถานการณ์จริง</button><span className="outline-badge"><ShieldCheck size={16}/> Human • Heart • Harmony</span></div></div>
+  <div className="mode-switch">{MODES.map(m=><button key={m.id} aria-pressed={data.form.mode===m.id} className={`mode-switch-card ${data.form.mode===m.id?'active':''}`} onClick={()=>{patchForm('mode',m.id);setPrompt('');setAiResult('');}}><strong>{m.short}</strong><small>{m.sub}</small></button>)}</div>
+  <div className="builder-grid"><section className="panel builder-form"><div className="panel-heading"><span className="step-no">01</span><div><h2>{modeFor(data.form.mode).name}</h2><p>{modeFor(data.form.mode).desc}</p></div></div>
+  <div className="form-stack"><label>หัวข้อการสื่อสาร<input maxLength={300} value={data.form.topic} onChange={e=>patchForm('topic',e.target.value)} placeholder="เช่น พิธีเปิดเวิร์กช็อป Public Speaking"/></label>
+  <div className="form-row"><label>เวลาพูด (นาที)<input type="number" min={1} max={60} value={data.form.duration} onChange={e=>patchForm('duration',Math.min(60,Math.max(1,+e.target.value||1)))}/></label><label>น้ำเสียง<select value={data.form.tone} onChange={e=>patchForm('tone',e.target.value)}>{['อบอุ่น ชัดเจน ให้เกียรติผู้ฟัง','เป็นทางการ กระชับ ตรงประเด็น','อธิบายง่าย พร้อมรับฟังความเห็นต่าง'].map(t=><option key={t}>{t}</option>)}</select></label></div>
+  <div className="canvas-5p">
+    <div className="canvas-5p-head">
+      <strong>5 กระบวนการ <span>เตรียมการก่อนการนำเสนอ : 5Ps Process</span></strong>
+      <button type="button" className="btn" style={{padding:'4px 10px',fontSize:'11px'}} onClick={fillPresetScenario}>
+        <Sparkles size={14}/> เติมตัวอย่างเวทีนี้
+      </button>
+    </div>
+    <div className="canvas-grid">
+      <div className="canvas-box">
+        <div className="canvas-box-title">วัตถุประสงค์ Purpose<span>ทำไมเราจึงนำเสนอครั้งนี้?</span></div>
+        <textarea rows={3} value={data.form.purpose||''} onChange={e=>patchForm('purpose',e.target.value)} placeholder="ทำไมเราจึงนำเสนอครั้งนี้..."/>
+        <span className="canvas-box-num">1</span>
+      </div>
+      <div className="canvas-box">
+        <div className="canvas-box-title">ผลจากการนำเสนอ Product<span>ผลของการนำเสนอที่วัดผลได้และมีคุณค่า</span></div>
+        <textarea rows={3} value={data.form.product||''} onChange={e=>patchForm('product',e.target.value)} placeholder="ผลที่วัดผลได้และมีคุณค่า..."/>
+        <span className="canvas-box-num">2</span>
+      </div>
+      <div className="canvas-box">
+        <div className="canvas-box-title">ผู้ฟัง Participants<span>คือใคร ต้องพัฒนาในเรื่องไหนและสนใจอะไร?</span></div>
+        <textarea rows={3} value={data.form.participants||''} onChange={e=>patchForm('participants',e.target.value)} placeholder="ผู้ฟังคือใคร สนใจอะไร..."/>
+        <span className="canvas-box-num">3</span>
+      </div>
+      <div className="canvas-box">
+        <div className="canvas-box-title">ปัญหาที่อาจเกิดขึ้น Problems<span>ระหว่างการนำเสนอ ตัดไฟแต่ต้นลม</span></div>
+        <textarea rows={3} value={data.form.problems||''} onChange={e=>patchForm('problems',e.target.value)} placeholder="ปัญหาหรือความประหม่าที่อาจเกิด..."/>
+        <span className="canvas-box-num">4</span>
+      </div>
+      <div className="canvas-box plan-box">
+        <div className="canvas-box-title">แผน Plan<span>ประเด็นและตัวอย่างเบื้องต้นในการนำเสนอ</span></div>
+        <div className="plan-cols">
+          <div className="plan-col">
+            <h4>ประเด็น <span>(หัวข้อ)</span></h4>
+            <textarea rows={6} value={data.form.planTopics||''} onChange={e=>patchForm('planTopics',e.target.value)} placeholder="1. หัวข้อที่ 1&#10;2. หัวข้อที่ 2&#10;3. หัวข้อที่ 3"/>
+          </div>
+          <div className="plan-col">
+            <h4>ตัวอย่าง <span>(ขยายความ)</span></h4>
+            <textarea rows={6} value={data.form.planExamples||''} onChange={e=>patchForm('planExamples',e.target.value)} placeholder="1. ตัวอย่างขยายความ&#10;2. สถิติหรือเรื่องเล่า&#10;3. ข้อคิดเชื่อมโยง"/>
+          </div>
+        </div>
+        <span className="canvas-box-num">5</span>
+      </div>
+    </div>
+  </div>
+  <label>สารสำคัญที่อยากให้เข้าใจ (Key Message)<textarea rows={2} maxLength={3000} value={data.form.keyMessage} onChange={e=>patchForm('keyMessage',e.target.value)} placeholder="ใจความสำคัญ 1 ประโยคที่ผู้ฟังต้องจำได้..."/></label>
+  {data.form.mode==='media'&&<label>คำถามจากสื่อ<textarea rows={2} value={data.form.question} maxLength={3000} onChange={e=>patchForm('question',e.target.value)}/></label>}
+  <label>ข้อเท็จจริงและข้อมูลประกอบ<textarea rows={3} maxLength={15000} value={data.form.facts} onChange={e=>patchForm('facts',e.target.value)} placeholder="วางข้อมูลพร้อมที่มา วันที่ และข้อจำกัดของข้อมูล..."/><small>ระบบยังไม่ได้ตรวจสอบข้อเท็จจริงภายนอกให้</small></label>
+  <label>ข้อจำกัด / เรื่องที่ต้องตรวจสอบ<textarea rows={2} maxLength={3000} value={data.form.limits} onChange={e=>patchForm('limits',e.target.value)}/></label>
+  <fieldset><legend>เลือกแหล่งข้อมูลแนบพรอมป์ต์</legend>{data.sources.length?data.sources.map(s=><label className="checkbox-label" key={s.id}><input type="checkbox" checked={selectedSources.includes(s.id)} onChange={e=>setSelectedSources(e.target.checked?[...selectedSources,s.id]:selectedSources.filter(id=>id!==s.id))}/><span>{s.title}</span></label>):<p className="fine">ยังไม่มีแหล่งข้อมูล เพิ่มได้ที่เมนูแหล่งข้อมูล</p>}</fieldset>
   <button className="btn ai-btn full" disabled={aiLoading} onClick={generateAiScript}>
     {aiLoading?<Loader2 className="spin" size={18}/>:<Sparkles size={18}/>}
-    {aiLoading?'กำลังประมวลผลบทพูดด้วย DeepSeek AI...':'✨ ให้ AI ช่วยร่างบทพูด (DeepSeek)'}
+    {aiLoading?'กำลังประมวลผลบทพูดด้วย DeepSeek AI...':'✨ ให้ DeepSeek AI ช่วยร่างบทพูดตาม 5Ps'}
   </button>
-  <button className="btn full" onClick={()=>{setPrompt(makePrompt(data.form,data.sources.filter(s=>selectedSources.includes(s.id))));setAiTab('template');notify('สร้างแม่แบบพรอมป์ต์จากข้อมูลของคุณแล้ว');}}>
-    <Copy size={17}/> สร้างแม่แบบพรอมป์ต์สำหรับนำไปใช้เอง
+  <button className="btn full" onClick={()=>{setPrompt(makePrompt(data.form,data.sources.filter(s=>selectedSources.includes(s.id))));setAiTab('template');notify('สร้างแม่แบบพรอมป์ต์ 5Ps จากข้อมูลของคุณแล้ว');}}>
+    <Copy size={17}/> สร้างแม่แบบพรอมป์ต์ 5Ps สำหรับนำไปใช้เอง
   </button></div></section>
   <section className="panel prompt-result">
     <div className="panel-heading"><span className="step-no">02</span><div><h2>ผลลัพธ์บทพูดและการเตรียมตัว</h2><p>เลือกดูแม่แบบพรอมป์ต์ หรือบทพูดที่ AI ช่วยร่าง</p></div></div>
