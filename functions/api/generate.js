@@ -63,8 +63,8 @@ export async function onRequestPost(context) {
           .split(',')
           .map(p => p.trim().toLowerCase())
           .filter(Boolean);
-        const adminMaster = (env.ADMIN_SECRET || 'KD-MASTER-2026').trim().toLowerCase();
-        allowedList.push(adminMaster, 'kd-master', 'kd2026');
+        const adminMaster = (env.ADMIN_SECRET || 'den2235919').trim().toLowerCase();
+        allowedList.push(adminMaster);
 
         const userPasscode = String(passcode || request.headers.get('X-Student-Passcode') || '').trim().toLowerCase();
         const isValid = allowedList.includes(userPasscode) || userPasscode.startsWith('kd-') || userPasscode.startsWith('speak-');

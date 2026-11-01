@@ -1416,7 +1416,7 @@ function AdminConsoleModal({classes,onSaveClasses,onClose,onNotify}){
             onChange={e=>setAdminKey(e.target.value)}
             placeholder="กรอกรหัส Admin ของครูเด่น"
           />
-          <small>รหัสเริ่มต้นคือ KD-MASTER หรือตามที่ตั้งไว้ในระบบ</small>
+          <small>ความปลอดภัย: เข้าถึงได้เฉพาะผู้ดูแลระบบหลัก (ครูเด่น) เท่านั้น</small>
         </label>
         {authError&&<div style={{background:'#fbeeed',border:'1px solid #e8b8b3',color:'#842a22',padding:'10px 14px',borderRadius:'6px',fontSize:'12px'}}>
           {authError}

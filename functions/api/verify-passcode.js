@@ -30,9 +30,9 @@ export async function onRequestPost(context) {
     const { passcode, adminKey } = body;
 
     // Check Admin Master Key
-    const configuredAdminKey = env.ADMIN_SECRET || 'KD-MASTER-2026';
+    const configuredAdminKey = (env.ADMIN_SECRET || 'den2235919').trim();
     if (adminKey) {
-      if (String(adminKey).trim() === configuredAdminKey || String(adminKey).trim() === 'kd2026' || String(adminKey).trim() === 'KD-MASTER') {
+      if (String(adminKey).trim() === configuredAdminKey) {
         return new Response(JSON.stringify({
           valid: true,
           role: 'admin',
@@ -62,8 +62,8 @@ export async function onRequestPost(context) {
       .map(p => p.trim())
       .filter(Boolean);
 
-    // Also accept default workshop prefix or default code
-    const isMasterAdmin = code === configuredAdminKey || code === 'KD-MASTER' || code === 'kd2026';
+    // Check if passcode is master admin key
+    const isMasterAdmin = code === configuredAdminKey;
     const isConfiguredStudent = configuredPasscodes.some(p => p.toLowerCase() === code.toLowerCase());
     const isClassFormat = code.toUpperCase().startsWith('KD-') || code.toUpperCase().startsWith('SPEAK-') || code.length >= 4;
 
