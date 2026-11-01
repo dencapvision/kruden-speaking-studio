@@ -47,3 +47,4 @@ test('loadStoredState preserves corrupted data in emergency key and flags corrup
   assert.equal(res.state.slides.length, 40);
   assert.equal(res.rawBackup, brokenData);
 });
+

@@ -70,3 +70,4 @@ export function exportSlidesMarkdown(slides) {
   const md = slides.map((s, i) => `# ${i + 1}. ${s.title}\n${s.subtitle}\n\n${(s.points || []).map(v => `- ${v}`).join('\n')}\n\nเวลา: ${s.time || '-'}\nบันทึกวิทยากร: ${s.notes || '-'}`).join('\n\n---\n\n');
   triggerDownload('kruden-slides.md', md, 'text/markdown;charset=utf-8');
 }
+
