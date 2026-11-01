@@ -150,18 +150,18 @@ export function clearClassroomSession() {
 
 export const DEFAULT_ADMIN_CLASSES = [
   {
-    id: 'class-mc14',
-    name: 'Public Speaking & MC Skills รุ่นที่ 14',
-    code: 'KD-MC14',
+    id: 'class-main2026',
+    name: 'Public Speaking & MC Skills (ห้องเรียนหลัก)',
+    code: 'kruden2026',
     active: true,
     createdAt: '2026-11-02'
   },
   {
-    id: 'class-speak2026',
-    name: 'Professional Speaking Masterclass 2026',
-    code: 'KD-SPEAK-2026',
+    id: 'class-mc14',
+    name: 'Workshop Public Speaking & MC รุ่นที่ 14',
+    code: 'KD-MC14',
     active: true,
-    createdAt: '2026-11-01'
+    createdAt: '2026-11-02'
   }
 ];
 
