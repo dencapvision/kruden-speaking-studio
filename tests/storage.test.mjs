@@ -19,7 +19,7 @@ test('loadStoredState returns initialState when storage is empty', () => {
   const res = loadStoredState();
   assert.equal(res.corrupted, false);
   assert.equal(res.error, null);
-  assert.equal(res.state.slides.length, 40);
+  assert.equal(res.state.sequences.length, 3);
 });
 
 test('saveStoredState and loadStoredState work round-trip', () => {
@@ -38,13 +38,12 @@ test('saveStoredState and loadStoredState work round-trip', () => {
 
 test('loadStoredState preserves corrupted data in emergency key and flags corruption', () => {
   localStorage.clear();
-  const brokenData = '{"slides": "this is not an array"}';
+  const brokenData = '{"sequences": "this is not an array"}';
   localStorage.setItem(STORAGE_KEY, brokenData);
 
   const res = loadStoredState();
   assert.equal(res.corrupted, true);
   assert.ok(res.error.includes('ตรวจพบข้อผิดพลาด'));
-  assert.equal(res.state.slides.length, 40);
+  assert.equal(res.state.sequences.length, 3);
   assert.equal(res.rawBackup, brokenData);
 });
-

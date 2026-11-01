@@ -1,102 +1,88 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Mic2,ArrowRight,Eye,Hand,Pause,MessageCircle,Check,ChevronLeft,ChevronRight,X,Play,RotateCcw,Maximize,Minimize,Volume2} from 'lucide-react';
-export function SlideVisual({slide,small=false}){
-  const points=slide.points||[];
-  const isDense=points.length>4;
-  return <div className={`slide-art ${slide.kind} ${small?'small':''} ${isDense?'dense':''}`}>
-  <div className="slide-head"><span>KRUDEN / SPEAKING CLASS</span><span>{slide.time||slide.group}</span></div>
-  <div className="slide-layout"><div className="slide-copy"><p className="slide-eyebrow">{slide.kind==='activity'?'LET’S PRACTICE':slide.kind==='scenario'?'WHAT WOULD YOU SAY?':slide.kind==='reflection'?'REFLECT & GROW':'HUMAN • HEART • HARMONY'}</p><h2>{slide.title}</h2><p className="slide-subtitle">{slide.subtitle}</p>
-  {slide.kind==='steps'?<div className="step-points">{points.map((p,i)=><div key={i}><span>{String(i+1).padStart(2,'0')}</span><p>{p}</p>{i<points.length-1&&<ArrowRight aria-hidden="true"/>}</div>)}</div>:slide.kind==='scale'?<><div className="scale-art">{(slide.subtitle.includes('0–4')?[0,1,2,3,4]:[1,2,3,4,5]).map(n=><span key={n}>{n}</span>)}</div><ul>{points.map((p,i)=><li key={i}>{p}</li>)}</ul></>:<ul>{points.map((p,i)=><li key={i}>{p}</li>)}</ul>}
-  </div><div className="stage-art" aria-hidden="true"><div className="stage-ring ring-outer"/><div className="stage-ring ring-inner"/>{slide.kind==='presence'?<div className="presence-art"><Eye/><Hand/><Check/></div>:slide.kind==='voice'?<div className="wave-art">{[25,52,76,44,100,65,36,84,55,32].map((v,i)=><i key={i} style={{height:v+'%'}}/>)}</div>:slide.kind==='break'?<Pause className="hero-mic"/>:slide.kind==='reflection'?<MessageCircle className="hero-mic"/>:<Mic2 className="hero-mic"/>}<span className="stage-caption">{slide.kind==='activity'?'YOUR TURN TO SPEAK':slide.kind==='break'?'TAKE A BREATH':'MAKE YOUR VOICE MATTER'}</span></div></div>
-  <div className="slide-foot"><span>ครูเด่น มาสเตอร์ฟา</span><span>{slide.kind==='steps'?'LEARN IT. TRY IT. MAKE IT YOURS.':'เข้าใจชัด · ทำได้ง่าย · ใช้ได้จริง'}</span></div></div>}
-export function Modal({title,children,onClose}){const ref=useRef();useEffect(()=>{const d=ref.current;d.showModal();const fn=e=>{e.preventDefault();onClose();};d.addEventListener('cancel',fn);return()=>{d.removeEventListener('cancel',fn);d.close();};},[]);return <dialog ref={ref} className="modal"><div className="modal-heading"><h2>{title}</h2><button className="icon-btn" aria-label="ปิดหน้าต่าง" onClick={onClose}><X size={20}/></button></div>{children}</dialog>}
-export function SlideEditor({slide,onSave,onClose}){
-  const [value,setValue]=useState({...slide});
-  return <Modal title="แก้ไขสไลด์" onClose={onClose}><form onSubmit={e=>{
-    e.preventDefault();
-    onSave({
-      ...value,
-      title:value.title.trim(),
-      subtitle:value.subtitle.trim(),
-      points:(value.points||[]).map(p=>typeof p==='string'?p.trim():'').filter(Boolean)
-    });
-  }} className="form-stack">
-    <label>หัวข้อหลัก<input required maxLength={300} value={value.title} onChange={e=>setValue({...value,title:e.target.value})}/></label>
-    <label>ข้อความรอง<input maxLength={1000} value={value.subtitle} onChange={e=>setValue({...value,subtitle:e.target.value})}/></label>
-    <label>ประเด็น / หนึ่งบรรทัดต่อหนึ่งข้อ (สูงสุด 20 ข้อ)<textarea rows={5} maxLength={10000} value={(value.points||[]).join('\n')} onChange={e=>setValue({...value,points:e.target.value.split('\n').slice(0,20)})}/></label>
-    <div className="form-row"><label>หมวด<input value={value.group} maxLength={100} onChange={e=>setValue({...value,group:e.target.value})}/></label><label>รูปแบบ<select value={value.kind} onChange={e=>setValue({...value,kind:e.target.value})}>{[['concept','แนวคิด'],['cover','ปก'],['activity','ฝึกปฏิบัติ'],['steps','แผนภาพขั้นตอน'],['scale','สเกลประประเมิน'],['scenario','สถานการณ์'],['reflection','สะท้อนคิด'],['voice','น้ำเสียง'],['presence','บุคลิกภาพ'],['break','พัก']].map(([v,t])=><option value={v} key={v}>{t}</option>)}</select></label></div>
-    <label>เวลา / คำกำกับ<input value={value.time} maxLength={200} onChange={e=>setValue({...value,time:e.target.value})}/></label>
-    <label>บันทึกวิทยากร<textarea rows={3} value={value.notes} maxLength={20000} onChange={e=>setValue({...value,notes:e.target.value})}/></label>
-    <button className="btn primary" type="submit"><Check size={18}/> บันทึกสไลด์</button>
-  </form></Modal>}
-export function Presenter({slides,start,onClose}){
-  const [index,setIndex]=useState(start);
-  const [isFullscreen,setIsFullscreen]=useState(!!document.fullscreenElement);
-  const root=useRef();
-  const move=delta=>setIndex(i=>Math.min(slides.length-1,Math.max(0,i+delta)));
-  
+import {Pause,Check,X,Play,RotateCcw} from 'lucide-react';
+
+export function Modal({title,children,onClose}){
+  const ref=useRef();
   useEffect(()=>{
-    const onFsChange=()=>setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange',onFsChange);
-    const fn=e=>{
-      if(e.key==='Escape'){
-        if(document.fullscreenElement){
-          document.exitFullscreen().catch(()=>{});
-        }else{
-          onClose();
-        }
-      }
-      if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();move(1);}
-      if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();move(-1);}
-    };
-    window.addEventListener('keydown',fn);
-    const shell=document.querySelector('.app-shell');
-    if(shell)shell.inert=true;
-    root.current?.focus();
+    const d=ref.current;
+    if(!d)return;
+    d.showModal();
+    const fn=e=>{e.preventDefault();onClose();};
+    d.addEventListener('cancel',fn);
     return()=>{
-      document.removeEventListener('fullscreenchange',onFsChange);
-      window.removeEventListener('keydown',fn);
-      if(shell)shell.inert=false;
-      if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+      d.removeEventListener('cancel',fn);
+      d.close();
     };
   },[]);
-
-  const toggleFullscreen=()=>{
-    if(document.fullscreenElement){
-      document.exitFullscreen().catch(()=>{});
-    }else{
-      root.current?.requestFullscreen?.().catch(()=>{});
-    }
-  };
-
-  const close=()=>{
-    if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
-    onClose();
-  };
-
-  return <div className="presenter" role="dialog" aria-label="โหมดนำเสนอสไลด์" aria-modal="true" ref={root} tabIndex={-1}>
-    <div className="presenter-bar">
-      <span>{index+1} / {slides.length}</span>
-      <span>← → เปลี่ยนหน้า · Esc ออก</span>
-      <div>
-        <button className="icon-btn" aria-label={isFullscreen?"ออกจากเต็มหน้าจอ":"เต็มหน้าจอ"} onClick={toggleFullscreen}>
-          {isFullscreen?<Minimize size={20}/>:<Maximize size={20}/>}
-        </button>
-        <button className="icon-btn" aria-label="ออกจากการนำเสนอ" onClick={close}><X size={22}/></button>
-      </div>
+  return <dialog ref={ref} className="modal">
+    <div className="modal-heading">
+      <h2>{title}</h2>
+      <button className="icon-btn" aria-label="ปิดหน้าต่าง" onClick={onClose}><X size={20}/></button>
     </div>
-    <SlideVisual slide={slides[index]}/>
-    <div className="presenter-controls">
-      <button className="btn" disabled={index===0} onClick={()=>move(-1)}><ChevronLeft/> ก่อนหน้า</button>
-      <span>{slides[index].notes||'หนึ่งหน้า หนึ่งประเด็น แล้วชวนผู้เรียนลงมือทำ'}</span>
-      <button className="btn" disabled={index===slides.length-1} onClick={()=>move(1)}>ถัดไป <ChevronRight/></button>
-    </div>
-  </div>;
+    {children}
+  </dialog>;
 }
+
+export function SequenceItemEditor({item,onSave,onClose}){
+  const [val,setVal]=useState({
+    time: item.time||'',
+    duration: item.duration||5,
+    segment: item.segment||'',
+    speaker: item.speaker||'',
+    cue: item.cue||'',
+    dialogue: item.dialogue||''
+  });
+
+  return <Modal title={item.id?'แก้ไขคิวรายการ':'เพิ่มคิวรายการใหม่'} onClose={onClose}>
+    <form className="form-stack" onSubmit={e=>{
+      e.preventDefault();
+      if(!val.segment.trim())return;
+      onSave({...item,...val,segment:val.segment.trim()});
+    }}>
+      <div className="form-row">
+        <label>
+          เวลาแสดงผล (เช่น 09.00-09.15)
+          <input required maxLength={100} value={val.time} onChange={e=>setVal({...val,time:e.target.value})} placeholder="09.00-09.15"/>
+        </label>
+        <label>
+          ระยะเวลาโดยประมาณ (นาที)
+          <input type="number" min={1} max={300} value={val.duration} onChange={e=>setVal({...val,duration:Math.max(1,+e.target.value||1)})}/>
+        </label>
+      </div>
+
+      <label>
+        ชื่อช่วงรายการ / ขั้นตอนสำคัญ (Segment)
+        <input required maxLength={300} value={val.segment} onChange={e=>setVal({...val,segment:e.target.value})} placeholder="เช่น กล่าวทักทาย & ต้อนรับแขกผู้มีเกียรติ"/>
+      </label>
+
+      <label>
+        ผู้พูด / บุคคลบนเวที (Speaker)
+        <input maxLength={300} value={val.speaker} onChange={e=>setVal({...val,speaker:e.target.value})} placeholder="เช่น พิธีกร, ประธานในพิธี, วิทยากรทั้ง 3 ท่าน"/>
+      </label>
+
+      <label>
+        คิวเวที / แสงเสียง / อุปกรณ์ (Cue & Tech Notes)
+        <textarea rows={2} maxLength={1000} value={val.cue} onChange={e=>setVal({...val,cue:e.target.value})} placeholder="เช่น หรี่เพลงบรรเลง / ฉายสไลด์เปิดงาน / ไมค์ลอย 2 ตัว"/>
+      </label>
+
+      <label>
+        บทพูดคีย์เวิร์ด / ข้อความสำคัญ (Key Dialogue / Cue Card)
+        <textarea rows={3} maxLength={5000} value={val.dialogue} onChange={e=>setVal({...val,dialogue:e.target.value})} placeholder="เช่น 'กราบเรียนท่านประธานและแขกผู้มีเกียรติทุกท่าน ขอต้อนรับเข้าสู่...'"/>
+      </label>
+
+      <div className="toolbar" style={{marginTop:'12px'}}>
+        <button className="btn" type="button" onClick={onClose}>ยกเลิก</button>
+        <button className="btn primary" type="submit"><Check size={16}/> บันทึกคิวรายการ</button>
+      </div>
+    </form>
+  </Modal>;
+}
+
 export function Rehearsal({script,notify}){
   const [running,setRunning]=useState(false),[seconds,setSeconds]=useState(0),[speed,setSpeed]=useState(24),[font,setFont]=useState(30);
   const viewport=useRef();
   const [scores,setScores]=useState(['','','','','']);
+
   useEffect(()=>{
     if(!running)return;
     let last=performance.now();

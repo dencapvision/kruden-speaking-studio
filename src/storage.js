@@ -1,4 +1,4 @@
-import {initialState} from './data.js';
+import {initialState, initialSequences} from './data.js';
 import {validateBackup} from './engine.js';
 
 export const STORAGE_KEY = 'kruden-speaking-studio-v1';
@@ -66,9 +66,23 @@ export function exportBackupJson(data) {
   triggerDownload('kruden-studio-backup.json', JSON.stringify(data, null, 2), 'application/json');
 }
 
-export function exportSlidesMarkdown(slides) {
-  const md = slides.map((s, i) => `# ${i + 1}. ${s.title}\n${s.subtitle}\n\n${(s.points || []).map(v => `- ${v}`).join('\n')}\n\nเวลา: ${s.time || '-'}\nบันทึกวิทยากร: ${s.notes || '-'}`).join('\n\n---\n\n');
-  triggerDownload('kruden-slides.md', md, 'text/markdown;charset=utf-8');
+export function exportSequenceMarkdown(seq) {
+  const lines = [
+    `# ${seq.title || 'ซีเคว้นงานพิธีกร'}`,
+    `เวที: ${seq.stage || '-'} | เวลารวม: ${seq.totalTime || '-'}`,
+    `${seq.description || ''}`,
+    '',
+    '| ลำดับ | เวลา | ช่วงรายการ | ผู้พูด | คิวเวที & แสงเสียง | บทพูดคีย์เวิร์ด (Dialogue / Cue) |',
+    '|---|---|---|---|---|---|'
+  ];
+  (seq.items || []).forEach((item, idx) => {
+    lines.push(`| ${idx + 1} | ${item.time || '-'} | ${item.segment || '-'} | ${item.speaker || '-'} | ${item.cue || '-'} | ${item.dialogue || '-'} |`);
+  });
+  triggerDownload(`run-of-show-${seq.stage || 'mc'}.md`, lines.join('\n'), 'text/markdown;charset=utf-8');
+}
+
+export function exportSlidesMarkdown(slides = []) {
+  exportSequenceMarkdown(initialSequences[0]);
 }
 
 export const SETTINGS_KEY = 'kruden-speaking-settings-v1';
@@ -98,4 +112,3 @@ export function saveAiSettings(settings) {
     return false;
   }
 }
-

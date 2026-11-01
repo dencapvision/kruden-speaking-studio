@@ -1,5 +1,6 @@
 import {newId} from './id.js';
-import {MODES} from './data.js';
+import {MODES, initialSequences} from './data.js';
+
 export const modeFor=id=>{
   if(id==='speech')return MODES.find(m=>m.id==='formal')||MODES[0];
   if(id==='listening')return MODES.find(m=>m.id==='community')||MODES[1];
@@ -100,33 +101,72 @@ ${m.structure.map(v=>`• ${v}`).join('\n')}
 
 ก่อนใช้จริง: ตรวจแหล่งอ้างอิง ข้อจำกัด และชื่อผู้เกี่ยวข้องทั้งหมด`;
 }
-export function safeUrl(value){try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:null;}catch{return null;}}
+
+export function safeUrl(value){
+  try{
+    const u=new URL(value);
+    return ['https:','http:'].includes(u.protocol)?u.href:null;
+  }catch{
+    return null;
+  }
+}
+
 export function validateBackup(x){
   if(!x || typeof x !== 'object') throw Error('รูปแบบไฟล์สำรองไม่ถูกต้อง');
   if(x.version !== undefined && x.version !== 1) throw Error('เวอร์ชันไฟล์สำรองไม่ถูกต้อง รองรับเฉพาะเวอร์ชัน 1');
-  const rawSlides = Array.isArray(x) ? x : x.slides;
-  if(!Array.isArray(rawSlides) || rawSlides.length < 1 || rawSlides.length > 500) throw Error('ข้อมูลสไลด์ไม่ถูกต้อง ต้องมีระหว่าง 1 ถึง 500 สไลด์');
+
+  const str = (v, max = 20000) => typeof v === 'string' && v.length <= max;
+
+  // Validate Sequences (MC Run of Show)
+  let rawSequences;
+  if (x.sequences !== undefined) {
+    if (!Array.isArray(x.sequences)) {
+      throw Error('ข้อมูลซีเคว้นพิธีกรต้องเป็น Array');
+    }
+    rawSequences = x.sequences;
+  } else if (Array.isArray(x.slides)) {
+    // Graceful backward compatibility if legacy backup had slides
+    rawSequences = initialSequences;
+  } else {
+    rawSequences = initialSequences;
+  }
+
+  if (rawSequences.length < 1 || rawSequences.length > 50) {
+    throw Error('ข้อมูลซีเคว้นพิธีกรไม่ถูกต้อง ต้องมีระหว่าง 1 ถึง 50 ชุด');
+  }
+
+  const sequences = rawSequences.map((seq, seqIdx) => {
+    if (!seq || !str(seq.title, 300) || !Array.isArray(seq.items)) {
+      throw Error(`ข้อมูลซีเคว้นงานลำดับที่ ${seqIdx + 1} ไม่ถูกต้อง`);
+    }
+    const items = seq.items.map((item, itemIdx) => {
+      if (!item || !str(item.segment, 300)) {
+        throw Error(`คิวงานลำดับที่ ${itemIdx + 1} ในชุด "${seq.title}" ไม่ถูกต้อง`);
+      }
+      return {
+        id: item.id && str(item.id, 100) ? item.id : `item-${seqIdx}-${itemIdx}-${newId()}`,
+        time: str(item.time, 100) ? item.time : '',
+        duration: Math.min(600, Math.max(1, Number(item.duration) || 5)),
+        segment: item.segment.trim(),
+        speaker: str(item.speaker, 300) ? item.speaker.trim() : '',
+        cue: str(item.cue, 1000) ? item.cue.trim() : '',
+        dialogue: str(item.dialogue, 5000) ? item.dialogue.trim() : ''
+      };
+    });
+    return {
+      id: seq.id && str(seq.id, 100) ? seq.id : `seq-${seqIdx}-${newId()}`,
+      title: seq.title.trim(),
+      stage: str(seq.stage, 50) ? seq.stage : 'formal',
+      totalTime: str(seq.totalTime, 100) ? seq.totalTime : '',
+      description: str(seq.description, 1000) ? seq.description : '',
+      items
+    };
+  });
+
   const rawSources = x.sources === undefined ? [] : x.sources;
   const rawDrafts = x.drafts === undefined ? [] : x.drafts;
   if(!Array.isArray(rawSources) || !Array.isArray(rawDrafts)) throw Error('รูปแบบรายการแหล่งข้อมูลหรือบทพูดไม่ถูกต้อง');
   if(rawSources.length > 200 || rawDrafts.length > 200) throw Error('ข้อมูลมากเกินขนาดที่รองรับ (สูงสุดอย่างละ 200 รายการ)');
-
-  const str = (v, max = 20000) => typeof v === 'string' && v.length <= max;
-  const slides = rawSlides.map((s, i) => {
-    if(!s || !str(s.title, 300) || !str(s.subtitle, 1000) || !Array.isArray(s.points) || s.points.length > 20 || !s.points.every(v => str(v, 2000))) {
-      throw Error(`ข้อมูลสไลด์ลำดับที่ ${i + 1} ไม่ถูกต้อง`);
-    }
-    return {
-      id: s.id && str(s.id, 100) ? s.id : `slide-${i}-${newId()}`,
-      title: s.title.trim(),
-      subtitle: s.subtitle.trim(),
-      points: s.points.map(p => typeof p === 'string' ? p.trim() : '').filter(Boolean),
-      group: str(s.group, 100) && s.group ? s.group : 'เริ่มต้น',
-      kind: ['concept','cover','timeline','steps','scale','activity','presence','mic','cue','voice','break','scenario','reflection'].includes(s.kind) ? s.kind : 'concept',
-      time: str(s.time, 200) ? s.time : '',
-      notes: str(s.notes) ? s.notes : ''
-    };
-  });
 
   const sources = rawSources.map((s, i) => {
     if(!s || !str(s.title, 300) || !str(s.url, 2000) || !safeUrl(s.url) || !str(s.note || '')) {
@@ -165,7 +205,7 @@ export function validateBackup(x){
 
   return {
     version: 1,
-    slides,
+    sequences,
     sources,
     drafts,
     form,
