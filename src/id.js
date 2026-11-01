@@ -1,0 +1,2 @@
+// Non-secret record IDs, including preview environments without secure-context UUID.
+export function newId(){if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();const bytes=new Uint8Array(16);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);return Array.from(bytes,v=>v.toString(16).padStart(2,'0')).join('');}
