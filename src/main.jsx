@@ -422,121 +422,213 @@ function App(){
 
           {storageError&&<div className="error-banner" role="alert">{storageError}</div>}
 
-          {/* PAGE: HOME */}
-          {page==='home'&&<>
-            <div className="page-heading">
-              <div>
-                <p className="eyebrow">PROFESSIONAL PUBLIC SPEAKING & MC STUDIO</p>
-                <h1>สร้างบทพูด คุมคิวเวที อย่างมั่นใจ<span className="heading-dot">.</span></h1>
-                <p>ศูนย์รวมการวางเนื้อหา 5Ps Process, จัดซีเคว้นงานพิธีกร (Run of Show), และซ้อมเสมือนจริง</p>
+          {/* PAGE: HOME (Modern Mobile-App Aesthetic) */}
+          {page==='home'&&<div className="home-mobile-container">
+            {/* 1. Mobile Greeting & Date Header */}
+            <div className="app-greeting-header">
+              <div className="app-greeting-left">
+                <div className="app-date-pill">
+                  <Calendar size={13}/>
+                  <span>{new Date().toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'})}</span>
+                  <span className="dot-sep">•</span>
+                  <span className="human-tag">Human • Heart • Harmony</span>
+                </div>
+                <h1 className="app-greeting-title">
+                  สวัสดีครับ, {classroomSession.studentName || 'เพื่อนนักพูด'} <span>✨</span>
+                </h1>
+                <p className="app-greeting-sub">
+                  วันนี้เตรียมบทพูดหรือคุมคิวพิธีกรบนเวทีไหนดีครับ?
+                </p>
               </div>
-              <div className="toolbar">
-                <button className="btn primary" onClick={()=>go('prompts')}><Sparkles size={18}/> ร่างบทพูด (5Ps Lab)</button>
-                <button className="btn" onClick={()=>go('sequence')}><ListOrdered size={18}/> จัดซีเคว้นพิธีกร</button>
+
+              <div className="app-greeting-right">
+                {classroomSession.entered ? (
+                  <button
+                    type="button"
+                    className="app-profile-pill active"
+                    onClick={()=>setClassroomModal(true)}
+                    title="ข้อมูลห้องเรียนของคุณ (คลิกเพื่อดูหรือออกจากห้อง)"
+                  >
+                    <span className="classroom-dot"/>
+                    <span className="pill-name">{classroomSession.studentName || 'ผู้เรียน'}</span>
+                    <span className="pill-code">{classroomSession.passcode}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="app-profile-pill login"
+                    onClick={()=>setClassroomModal(true)}
+                    title="กรอกรหัสเข้าห้องเรียน"
+                  >
+                    <KeyRound size={14}/>
+                    <span>เข้าห้องเรียน</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            <section className="hero-workshop">
-              <div className="hero-left">
-                <div className="hero-topline">
-                  <span className="tag light">SPEECH & MC RUN OF SHOW</span>
-                  <span>PROFESSIONAL TOOLS</span>
+            {/* 2. Primary Hero Focus Card (Mombo Style - One Primary Action) */}
+            <section className="app-hero-card">
+              <div className="app-hero-content">
+                <div className="app-hero-tag">
+                  <Sparkles size={13}/>
+                  <span>KRUDEN AI SPEECH ASSISTANT</span>
                 </div>
-                <h2>เตรียมเนื้อหาให้ชัด<br/><span>ดำเนินรายการอย่างลื่นไหล</span></h2>
-                <p>ออกแบบบทพูด วิเคราะห์ 5 กระบวนการ (5Ps Process) พร้อมระบบใบคิวพิธีกรมาตรฐานสำหรับ 3 เวทีจริง</p>
-                <div className="hero-meta">
-                  <span><ListOrdered size={17}/> 3 แม่แบบซีเคว้น</span>
-                  <span><Clock size={17}/> 3 ชั่วโมงเวิร์กช็อป</span>
-                  <span><BookOpen size={17}/> 5P Framework</span>
-                </div>
-                <div className="hero-actions">
-                  <button className="btn cream" onClick={()=>go('prompts')}>เปิด Script Lab & 5Ps <ArrowRight size={18}/></button>
-                  <button className="hero-present" onClick={()=>go('sequence')}><ListOrdered size={17}/> ดูซีเคว้นพิธีกร</button>
-                </div>
-              </div>
-              <div className="hero-poster">
-                <span className="poster-circle c1"/><span className="poster-circle c2"/>
-                <Mic2 className="poster-mic" strokeWidth={1}/>
-                <span className="poster-word">SPEAK<br/><em>with purpose.</em></span>
-                <span className="poster-note">HUMAN • HEART • HARMONY</span>
-              </div>
-            </section>
-
-            <section className="quick-metrics">
-              <div>
-                <span className="metric-icon"><Sparkles/></span>
-                <div>
-                  <strong>03</strong>
-                  <span>รูปแบบเวทีพิธีกรหลัก</span>
+                <h2>ร่างบทพูดให้จับใจ<br/><span>ดำเนินรายการอย่างลื่นไหล</span></h2>
+                <p>
+                  ตอบ 5 คำถามสำคัญ (5Ps Process) ให้ Kruden AI ช่วยแปลงเป็นโครงสร้างบทพูดจริง พร้อมเกลาจังหวะหายใจ (/) และสร้างประเด็นจำ
+                </p>
+                <div className="app-hero-actions">
+                  <button className="btn ai-btn app-pill-btn" onClick={()=>go('prompts')}>
+                    <Sparkles size={16}/> ให้ Kruden AI ช่วยร่างบทพูด
+                  </button>
+                  <button className="btn app-pill-btn-outline" onClick={()=>go('sequence')}>
+                    <ListOrdered size={16}/> จัดซีเคว้นคิวพิธีกร
+                  </button>
                 </div>
               </div>
-              <div>
-                <span className="metric-icon"><ListOrdered/></span>
-                <div>
-                  <strong>{String(totalAllItems).padStart(2,'0')}</strong>
-                  <span>คิวในซีเคว้นงานทั้งหมด</span>
-                </div>
-              </div>
-              <div>
-                <span className="metric-icon"><FileText/></span>
-                <div>
-                  <strong>{String(data.drafts.length).padStart(2,'0')}</strong>
-                  <span>บทพูดที่บันทึกไว้</span>
-                </div>
-              </div>
-              <div>
-                <span className="metric-icon"><Library/></span>
-                <div>
-                  <strong>{String(data.sources.length).padStart(2,'0')}</strong>
-                  <span>แหล่งข้อมูลประกอบ</span>
+              <div className="app-hero-visual">
+                <span className="hero-shape-circle s1"/>
+                <span className="hero-shape-circle s2"/>
+                <Mic2 className="hero-visual-mic" strokeWidth={1.2}/>
+                <div className="hero-quote-box">
+                  <strong>SPEAK</strong>
+                  <small>with clarity & purpose</small>
                 </div>
               </div>
             </section>
 
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">ONE SENTENCE · THREE STAGES</p>
-                <h2>วันนี้ คุณจะเตรียมการพูดบนเวทีไหน?</h2>
+            {/* 3. Four Modern Metric Stat Chips (Image 1 Style - Colorful Circular Badges) */}
+            <section className="app-metrics-grid">
+              <div className="metric-chip yellow" onClick={()=>go('prompts')} role="button" tabIndex={0}>
+                <div className="metric-chip-icon"><Sparkles size={18}/></div>
+                <div className="metric-chip-info">
+                  <span className="metric-chip-num">03</span>
+                  <span className="metric-chip-label">เวทีจริง 5Ps</span>
+                </div>
+                <ArrowRight size={14} className="metric-chip-arrow"/>
               </div>
-              <button className="link-button" onClick={()=>go('prompts')}>ดูเครื่องมือเตรียมบททั้งหมด <ArrowRight size={16}/></button>
+
+              <div className="metric-chip blue" onClick={()=>go('sequence')} role="button" tabIndex={0}>
+                <div className="metric-chip-icon"><ListOrdered size={18}/></div>
+                <div className="metric-chip-info">
+                  <span className="metric-chip-num">{String(totalAllItems).padStart(2,'0')}</span>
+                  <span className="metric-chip-label">คิวใบลำดับงาน</span>
+                </div>
+                <ArrowRight size={14} className="metric-chip-arrow"/>
+              </div>
+
+              <div className="metric-chip green" onClick={()=>go('script')} role="button" tabIndex={0}>
+                <div className="metric-chip-icon"><FileText size={18}/></div>
+                <div className="metric-chip-info">
+                  <span className="metric-chip-num">{String(data.drafts.length).padStart(2,'0')}</span>
+                  <span className="metric-chip-label">บทที่บันทึกไว้</span>
+                </div>
+                <ArrowRight size={14} className="metric-chip-arrow"/>
+              </div>
+
+              <div className="metric-chip coral" onClick={()=>go('rehearsal')} role="button" tabIndex={0}>
+                <div className="metric-chip-icon"><Radio size={18}/></div>
+                <div className="metric-chip-info">
+                  <span className="metric-chip-num">LIVE</span>
+                  <span className="metric-chip-label">ห้องซ้อมพูด</span>
+                </div>
+                <ArrowRight size={14} className="metric-chip-arrow"/>
+              </div>
+            </section>
+
+            {/* 4. Three Real Stages Selection (Card Segmented Style) */}
+            <div className="section-heading modern-section-head">
+              <div>
+                <p className="eyebrow">3 REAL STAGES · FRAMEWORKS</p>
+                <h2>เลือกเวทีที่คุณจะขึ้นพูดหรือดำเนินรายการ</h2>
+              </div>
+              <button className="link-button" onClick={()=>go('prompts')}>
+                ดู Script Lab ทั้งหมด <ArrowRight size={15}/>
+              </button>
             </div>
 
-            <div className="mode-list">
-              {MODES.map((m,i)=>(
-                <button className="mode-entry" key={m.id} onClick={()=>startPrompt(m.id)}>
-                  <span className="mode-number">0{i+1}</span>
-                  <div>
-                    <h3>{m.name}</h3>
-                    <p>{m.desc}</p>
+            <div className="app-stage-cards">
+              {MODES.map((m,idx)=>(
+                <div className="app-stage-card" key={m.id}>
+                  <div className="stage-card-top">
+                    <span className="stage-index-badge">0{idx+1}</span>
+                    <span className="stage-time-tag">
+                      <Clock size={12}/> {m.duration} นาที
+                    </span>
                   </div>
-                  <ArrowUpRight size={22}/>
-                </button>
+                  <h3>{m.name}</h3>
+                  <p>{m.desc}</p>
+                  
+                  <div className="stage-structure-tags">
+                    {m.structure.slice(0,3).map((st,i)=>(
+                      <span key={i} className="stage-mini-tag">{st}</span>
+                    ))}
+                  </div>
+
+                  <div className="stage-card-actions">
+                    <button className="btn primary stage-action-btn" onClick={()=>startPrompt(m.id)}>
+                      <Sparkles size={14}/> ร่างบท 5Ps
+                    </button>
+                    <button className="btn stage-action-btn" onClick={()=>{setActiveSeqStage(m.id);go('sequence');}}>
+                      <ListOrdered size={14}/> ดูใบคิว
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
 
-            <div className="home-bottom">
-              <section className="agenda-panel">
-                <div className="section-heading">
-                  <h2>เส้นทางเวิร์กช็อป</h2>
-                  <span className="fine">09.00–12.00 น.</span>
-                </div>
-                {agenda.map(([time,label,min])=>(
-                  <div className="agenda-row" key={time}>
-                    <time>{time}</time>
-                    <span>{label}</span>
-                    <small>{min} นาที</small>
+            {/* 5. Quick Tools & Agenda (2-Column Mobile Dashboard) */}
+            <div className="app-home-grid">
+              <section className="app-card-panel">
+                <div className="card-panel-head">
+                  <div className="panel-title-with-icon">
+                    <div className="panel-icon-circle green"><Clock size={16}/></div>
+                    <div>
+                      <h3>กำหนดการเวิร์กช็อป 180 นาที</h3>
+                      <p>หลักสูตร Public Speaking & MC Skills โดยครูเด่น</p>
+                    </div>
                   </div>
-                ))}
+                  <span className="fine-badge">3 ชม.</span>
+                </div>
+                <div className="agenda-mini-list">
+                  {agenda.map(([time,label,min])=>(
+                    <div className="agenda-mini-row" key={time}>
+                      <span className="agenda-time-pill">{time}</span>
+                      <span className="agenda-label-text">{label}</span>
+                      <span className="agenda-duration-tag">{min} นาที</span>
+                    </div>
+                  ))}
+                </div>
               </section>
-              <section className="principle-panel">
-                <ShieldCheck size={30}/>
-                <h2>สื่อสารด้วยความเข้าใจ<br/>และความรับผิดชอบ</h2>
-                <p>แยกข้อเท็จจริงออกจากข้อเสนอ อ้างที่มาของข้อมูล และเปิดพื้นที่ให้ความเห็นต่างได้มีเสียง</p>
-                <button className="link-button" onClick={()=>go('sources')}>จัดการแหล่งข้อมูล <ArrowRight size={17}/></button>
-                <small>ออกแบบสคริปต์และจัดซีเคว้นตามแนวทาง Human • Heart • Harmony ของครูเด่น มาสเตอร์ฟา</small>
+
+              <section className="app-card-panel principle-warm-card">
+                <div className="card-panel-head">
+                  <div className="panel-title-with-icon">
+                    <div className="panel-icon-circle yellow"><ShieldCheck size={16}/></div>
+                    <div>
+                      <h3>ปรัชญาการสื่อสาร</h3>
+                      <p>Human • Heart • Harmony</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="principle-body">
+                  <blockquote>
+                    "การพูดที่ทรงพลังไม่ได้เริ่มจากคำที่ไพเราะ แต่เริ่มจากความจริงใจ การรับฟัง และการสร้างพื้นที่ปลอดภัยให้ผู้ฟังทุกคน"
+                  </blockquote>
+                  <p className="principle-author">— ครูเด่น มาสเตอร์ฟา</p>
+                </div>
+                <div className="principle-tools-row">
+                  <button className="btn" onClick={()=>go('rehearsal')}>
+                    <Radio size={14}/> ห้องซ้อม Teleprompter
+                  </button>
+                  <button className="btn" onClick={()=>go('sources')}>
+                    <Library size={14}/> แหล่งข้อมูลประกอบ
+                  </button>
+                </div>
               </section>
             </div>
-          </>}
+          </div>}
 
           {/* PAGE: PROMPTS (Script Lab & 5Ps) */}
           {page==='prompts'&&<>
@@ -1213,6 +1305,53 @@ function App(){
         notify('บันทึกการตั้งค่า AI เรียบร้อยแล้ว');
       }}
     />}
+    {/* Floating Mobile Bottom Navigation Bar (Modern App Dock) */}
+    <nav className="mobile-app-bottom-bar" aria-label="แถบนำทางด่วน">
+      <button
+        type="button"
+        className={`bottom-bar-item ${page==='home'?'active':''}`}
+        onClick={()=>go('home')}
+      >
+        <div className="bottom-icon-wrap"><LayoutDashboard size={20}/></div>
+        <span>หน้าแรก</span>
+      </button>
+
+      <button
+        type="button"
+        className={`bottom-bar-item ${page==='prompts'?'active':''}`}
+        onClick={()=>go('prompts')}
+      >
+        <div className="bottom-icon-wrap"><Sparkles size={20}/></div>
+        <span>Script Lab</span>
+      </button>
+
+      <button
+        type="button"
+        className={`bottom-bar-item ${page==='sequence'?'active':''}`}
+        onClick={()=>go('sequence')}
+      >
+        <div className="bottom-icon-wrap"><ListOrdered size={20}/></div>
+        <span>ซีเคว้น</span>
+      </button>
+
+      <button
+        type="button"
+        className={`bottom-bar-item ${page==='script'?'active':''}`}
+        onClick={()=>go('script')}
+      >
+        <div className="bottom-icon-wrap"><FileText size={20}/></div>
+        <span>เขียนบท</span>
+      </button>
+
+      <button
+        type="button"
+        className={`bottom-bar-item ${page==='rehearsal'?'active':''}`}
+        onClick={()=>go('rehearsal')}
+      >
+        <div className="bottom-icon-wrap"><Radio size={20}/></div>
+        <span>ซ้อมพูด</span>
+      </button>
+    </nav>
   </>;
 }
 

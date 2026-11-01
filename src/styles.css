@@ -66,6 +66,762 @@
 .admin-table th{background:#f3f6ee;color:#274c37;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
 .admin-table td{padding:10px 12px;border-bottom:1px solid #edf0ea;vertical-align:middle}
 
+/* ==========================================================
+   KRUDEN MODERN MOBILE APP DESIGN SYSTEM (iOS / Android Feel)
+   ========================================================== */
+
+.home-mobile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.app-greeting-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 4px 2px 8px;
+}
+
+.app-greeting-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.app-date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #f1f5ee;
+  border: 1px solid #dbe5d8;
+  color: #557262;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.dot-sep {
+  color: #b2c2b7;
+}
+
+.human-tag {
+  color: #275646;
+  font-weight: 600;
+}
+
+.app-greeting-title {
+  font-family: Prompt, sans-serif;
+  font-size: clamp(24px, 3.2vw, 36px);
+  font-weight: 600;
+  line-height: 1.35;
+  color: #153b32;
+  letter-spacing: -0.5px;
+}
+
+.app-greeting-title span {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.app-greeting-sub {
+  color: #64756d;
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+.app-greeting-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #dce5da;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #1e4538;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.app-profile-pill:hover {
+  background: #f3f7f1;
+  border-color: #9dbda3;
+  transform: translateY(-1px);
+}
+
+.app-profile-pill.active {
+  background: #edf5eb;
+  border-color: #c0d8be;
+}
+
+.pill-name {
+  font-weight: 600;
+  color: #164034;
+}
+
+.pill-code {
+  background: #dbe8d8;
+  color: #1f4737;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: Prompt, monospace;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Mombo-style One Primary Focus Hero Card */
+.app-hero-card {
+  background: linear-gradient(135deg, #134237 0%, #195244 55%, #1f5d4e 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 32px 36px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 40px -12px rgba(18, 52, 44, 0.28), 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid #285e50;
+}
+
+.app-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.app-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #f7eed7;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  width: max-content;
+  margin-bottom: 14px;
+  backdrop-filter: blur(4px);
+}
+
+.app-hero-content h2 {
+  font-family: Prompt, sans-serif;
+  font-size: clamp(24px, 2.5vw, 38px);
+  line-height: 1.35;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.app-hero-content h2 span {
+  color: #edd197;
+}
+
+.app-hero-content p {
+  color: #b7cebf;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 14px 0 22px;
+  max-width: 480px;
+}
+
+.app-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-pill-btn {
+  border-radius: 9999px !important;
+  padding: 12px 24px !important;
+  font-weight: 600;
+  font-size: 13px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.app-pill-btn-outline {
+  border-radius: 9999px !important;
+  padding: 12px 22px !important;
+  font-weight: 500;
+  font-size: 12px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.app-pill-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: #ffffff !important;
+}
+
+.app-hero-visual {
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-shape-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-shape-circle.s1 {
+  width: 280px;
+  height: 280px;
+  right: -20px;
+  top: -20px;
+}
+
+.hero-shape-circle.s2 {
+  width: 380px;
+  height: 380px;
+  right: -70px;
+  top: -60px;
+}
+
+.hero-visual-mic {
+  width: 140px;
+  height: 140px;
+  color: #e3caa2;
+  opacity: 0.85;
+  transform: rotate(15deg);
+  position: relative;
+  z-index: 1;
+}
+
+.hero-quote-box {
+  position: absolute;
+  bottom: 12px;
+  right: 18px;
+  text-align: right;
+  z-index: 2;
+}
+
+.hero-quote-box strong {
+  display: block;
+  font-family: Prompt, sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: #f7edd4;
+  line-height: 1;
+}
+
+.hero-quote-box small {
+  font-size: 10px;
+  color: #a4bea9;
+  letter-spacing: 1px;
+}
+
+/* Four Modern Metric Stat Chips (Image 1 Style) */
+.app-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.metric-chip {
+  background: #ffffff;
+  border: 1px solid #e2eae0;
+  border-radius: 20px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(24, 62, 53, 0.03);
+}
+
+.metric-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(24, 62, 53, 0.07);
+  border-color: #9cbda2;
+}
+
+.metric-chip-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.metric-chip:hover .metric-chip-icon {
+  transform: scale(1.08);
+}
+
+.metric-chip.yellow .metric-chip-icon {
+  background: #fff8e6;
+  color: #b78119;
+}
+
+.metric-chip.blue .metric-chip-icon {
+  background: #edf5fc;
+  color: #206798;
+}
+
+.metric-chip.green .metric-chip-icon {
+  background: #edf6ee;
+  color: #1e663e;
+}
+
+.metric-chip.coral .metric-chip-icon {
+  background: #fdf0ec;
+  color: #ba4729;
+}
+
+.metric-chip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-chip-num {
+  display: block;
+  font-family: Prompt, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #183e35;
+}
+
+.metric-chip-label {
+  display: block;
+  font-size: 11px;
+  color: #718178;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-chip-arrow {
+  color: #96a59b;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+.metric-chip:hover .metric-chip-arrow {
+  transform: translateX(3px);
+  opacity: 1;
+  color: #1a5044;
+}
+
+/* Three Real Stages Modern Cards */
+.modern-section-head {
+  margin: 10px 0 6px !important;
+}
+
+.app-stage-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.app-stage-card {
+  background: #ffffff;
+  border: 1px solid #e1e9df;
+  border-radius: 22px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 18px rgba(24, 62, 53, 0.03);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.app-stage-card:hover {
+  transform: translateY(-3px);
+  border-color: #9abfa0;
+  box-shadow: 0 10px 30px rgba(24, 62, 53, 0.08);
+}
+
+.stage-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.stage-index-badge {
+  font-family: Prompt, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  background: #edf5eb;
+  color: #215940;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.stage-time-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #75857c;
+  background: #f7f9f6;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #e8ede6;
+}
+
+.app-stage-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #173d34;
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.app-stage-card p {
+  font-size: 12px;
+  color: #66756d;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.stage-structure-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.stage-mini-tag {
+  background: #f4f7f2;
+  border: 1px solid #dce4d9;
+  color: #3b5a4a;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.stage-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.stage-action-btn {
+  font-size: 11px !important;
+  padding: 8px 10px !important;
+  min-height: 38px !important;
+  border-radius: 12px !important;
+  justify-content: center !important;
+}
+
+/* Quick Tools & Agenda Grid */
+.app-home-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 20px;
+}
+
+.app-card-panel {
+  background: #ffffff;
+  border: 1px solid #e2eae0;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 4px 18px rgba(24, 62, 53, 0.03);
+}
+
+.card-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf2eb;
+}
+
+.panel-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.panel-icon-circle.green {
+  background: #edf6ed;
+  color: #1e663e;
+}
+
+.panel-icon-circle.yellow {
+  background: #fff8e6;
+  color: #b78119;
+}
+
+.panel-title-with-icon h3 {
+  font-size: 15px;
+  color: #173d34;
+  margin: 0;
+}
+
+.panel-title-with-icon p {
+  font-size: 11px;
+  color: #7b8a81;
+  margin: 2px 0 0;
+}
+
+.fine-badge {
+  font-size: 10px;
+  background: #edf3e8;
+  color: #275646;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.agenda-mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agenda-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: #fbfdfa;
+  border: 1px solid #edf2ea;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.agenda-time-pill {
+  font-family: Prompt, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #255948;
+  background: #edf5eb;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.agenda-label-text {
+  flex: 1;
+  color: #273b32;
+  font-weight: 500;
+}
+
+.agenda-duration-tag {
+  color: #829288;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.principle-warm-card {
+  background: #fcfbf6 !important;
+  border-color: #ede2c9 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.principle-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 4px;
+}
+
+.principle-body blockquote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #43331a;
+  font-style: italic;
+  border-left: 3px solid #d9b47a;
+  padding-left: 14px;
+}
+
+.principle-author {
+  font-size: 11px;
+  color: #796647;
+  margin: 12px 0 0;
+  font-weight: 600;
+}
+
+.principle-tools-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 18px;
+  border-top: 1px solid #ebdcb8;
+  padding-top: 16px;
+}
+
+.principle-tools-row .btn {
+  font-size: 11px;
+  border-radius: 10px;
+  padding: 8px;
+  justify-content: center;
+}
+
+/* Floating Mobile Bottom Navigation Dock (iOS / Android Style) */
+.mobile-app-bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(220, 230, 218, 0.85);
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 8px));
+  box-shadow: 0 -6px 24px rgba(18, 52, 44, 0.06);
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bottom-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: #6d8076;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 68px;
+  cursor: pointer;
+}
+
+.bottom-bar-item .bottom-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 30px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.bottom-bar-item.active {
+  color: #174c3d;
+  font-weight: 700;
+}
+
+.bottom-bar-item.active .bottom-icon-wrap {
+  background: #edf5eb;
+  color: #174c3d;
+}
+
+/* Responsive Media Queries for Mobile App View */
+@media (max-width: 900px) {
+  .mobile-app-bottom-bar {
+    display: flex;
+  }
+  .main-shell {
+    padding-bottom: calc(85px + env(safe-area-inset-bottom, 16px)) !important;
+  }
+  .app-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .app-stage-cards {
+    grid-template-columns: 1fr;
+  }
+  .app-home-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-hero-card {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+  .app-hero-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-greeting-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .app-greeting-right {
+    margin-top: 4px;
+  }
+  .app-profile-pill {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .app-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .app-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .app-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .metric-chip {
+    padding: 12px 10px;
+    gap: 8px;
+  }
+  .metric-chip-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .metric-chip-num {
+    font-size: 17px;
+  }
+  .metric-chip-label {
+    font-size: 10px;
+  }
+  .stage-card-actions {
+    grid-template-columns: 1fr;
+  }
+  .principle-tools-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media print{
   @page{size:landscape;margin:10mm}
   html,body{background:white!important;color:#111!important;margin:0;padding:0;overflow:visible}
