@@ -36,6 +36,8 @@ function App(){
   const [aiLoading,setAiLoading]=useState(false);
   const [aiResult,setAiResult]=useState('');
   const [aiTab,setAiTab]=useState('template');
+  const [aiAction,setAiAction]=useState('');
+  const [aiAssistantResult,setAiAssistantResult]=useState(null);
   
   const [page,setPage]=useState('home');
   const [mobile,setMobile]=useState(false);
@@ -184,6 +186,44 @@ function App(){
     }
   };
 
+  const callAiAssistant=async(action)=>{
+    if(!data.script.trim()){
+      notify('กรุณากรอกหรือวางบทพูดที่ต้องการให้ AI ช่วยเกลาในพื้นที่เขียนบทก่อน');
+      return;
+    }
+    setAiLoading(true);
+    setAiAction(action);
+    try{
+      const res=await fetch('/api/generate',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          ...(aiSettings.passcode?{'X-Student-Passcode':aiSettings.passcode}:{})
+        },
+        body:JSON.stringify({
+          prompt:`หัวข้อ: ${data.form.topic||'ไม่ระบุ'}\nรูปแบบเวที: ${modeFor(data.form.mode).name}\n\nเนื้อหาบทพูด:\n${data.script}`,
+          action,
+          passcode:aiSettings.passcode,
+          customApiKey:aiSettings.customApiKey
+        })
+      });
+      const json=await res.json();
+      if(!res.ok){
+        throw Error(json.error||'ไม่สามารถเรียกใช้ AI ได้');
+      }
+      setAiAssistantResult({text:json.text,action});
+      notify('AI ประมวลผลและเกลาคำพูดให้เรียบร้อยแล้ว');
+    }catch(err){
+      notify('ข้อผิดพลาด AI: '+err.message);
+      if(err.message.includes('รหัสผ่าน')||err.message.includes('Key')||err.message.includes('ตั้งค่า')){
+        setSettingsModal(true);
+      }
+    }finally{
+      setAiLoading(false);
+      setAiAction('');
+    }
+  };
+
   const fillPresetScenario=()=>{
     const m=data.form.mode;
     if(m==='formal'||m==='speech'){
@@ -193,10 +233,13 @@ function App(){
       setData(d=>({...d,form:{...d.form,mode:'community',topic:'เวทีรับฟังความคิดเห็นเพื่อการพัฒนาพื้นที่ส่วนกลางในชุมชน',keyMessage:'เปิดพื้นที่รับฟังทุกเสียงอย่างเท่าเทียม เพื่อร่วมออกแบบชุมชนที่มีชีวิต',duration:5,tone:'อธิบายง่าย พร้อมรับฟังความเห็นต่าง',purpose:'รับฟังความต้องการ ปัญหา และข้อเสนอแนะในการปรับปรุงพื้นที่ส่วนกลาง',product:'ได้ข้อสรุป 3 ประเด็นสำคัญที่คนในชุมชนเห็นพ้องร่วมกัน',participants:'ชาวบ้านในพื้นที่ ผู้นำชุมชน กลุ่มเยาวชน และผู้สูงอายุ',problems:'อาจมีความเห็นต่างเรื่องการใช้ประโยชน์ ต้องเน้นรับฟัง ไม่ตัดสิน และบันทึกข้อเท็จจริง',planTopics:'1. เปิดเวทีและตั้งกติกาพื้นที่ปลอดภัย\n2. ชวนคุยประสบการณ์และปัญหาที่พบ\n3. เปิดรับข้อเสนอแนะและก้าวต่อไป',planExamples:'1. ทุกเสียงมีคุณค่า ไม่มีการตัดสินถูกผิด\n2. ปัญหาไฟส่องสว่างและความสะอาด\n3. ร่วมโหวตแนวทางทดลองทำใน 30 วัน'}}));
       notify('โหลดตัวอย่างสถานการณ์: เวทีชุมชน (เปิดรับฟัง)');
     }else if(m==='panel'||m==='debate'){
-      setData(d=>({...d,form:{...d.form,mode:'panel',topic:'เวทีเสวนา: อนาคตการสื่อสารในยุค AI และพลังของ Human Touch',keyMessage:'AI เป็นเครื่องมือเสริมพลัง แต่หัวใจความเข้าใจมนุษย์คือสิ่งที่แทนไม่ได้',duration:5,tone:'เป็นทางการ กระชับ ตรงประเด็น',purpose:'เกริ่นนำประเด็น แนะนำวิทยากร 3 ท่าน และดำเนินรายการเสวนาอย่างลื่นไหล',product:'ผู้ฟังได้แนวทางนำ AI ไปประยุกต์ใช้โดยไม่สูญเสียความจริงใจ',participants:'คนทำงานรุ่นใหม่ นักศึกษา และผู้บริหารองค์กร',problems:'เวลาตอบอาจบานปลาย ต้องกำหนดกติกาคนละ 2 นาทีและคุมจังหวะสุภาพ',planTopics:'1. เกริ่นนำความท้าทายในยุค AI\n2. แนะนำวิทยากรผู้ทรงคุณวุฒิ 3 ท่าน\n3. โยนคำถามแรกเพื่อเปิดมุมมอง',planExamples:'1. เทคโนโลยีเปลี่ยนเร็ว แต่การฟังด้วยใจยังสำคัญ\n2. ผู้เชี่ยวชาญ AI, นักจิตวิทยา, นักสื่อสารมวลชน\n3. ทักษะใดที่ AI ยังสู้ความเข้าใจมนุษย์ไม่ได้?'}}));
-      notify('โหลดตัวอย่างสถานการณ์: เวทีเสวนา (แนะนำผู้พูด)');
+      setData(d=>({...d,form:{...d.form,mode:'panel',topic:'เวทีเสวนา & อภิปราย: อนาคตการสื่อสารในยุค AI และพลังของ Human Touch',keyMessage:'AI เป็นเครื่องมือเสริมพลัง แต่หัวใจความเข้าใจมนุษย์คือสิ่งที่แทนไม่ได้',duration:5,tone:'เป็นทางการ กระชับ ตรงประเด็น',purpose:'วิเคราะห์ประเด็นอภิปรายคมคาย แนะนำวิทยากร 3 ท่าน และโยนคำถามนำเสวนา',product:'ผู้ฟังได้ข้อสรุปแนวทางนำ AI ไปประยุกต์ใช้ พร้อมวิธีตั้งรับข้อโต้แย้ง',participants:'คนทำงานรุ่นใหม่ นักศึกษา และผู้บริหารองค์กร',problems:'เวลาตอบอาจบานปลาย หรือมีข้อโต้แย้ง ต้องตั้งสติ (STOP) คุมเวลา และดึงกลับเข้าประเด็น',planTopics:'1. เกริ่นนำความท้าทายในยุค AI\n2. แนะนำวิทยากรผู้ทรงคุณวุฒิ 3 ท่าน\n3. โยนคำถามแรกเพื่อเปิดมุมมองและตั้งรับจุดต่าง',planExamples:'1. เทคโนโลยีเปลี่ยนเร็ว แต่การฟังด้วยใจยังสำคัญ\n2. ผู้เชี่ยวชาญ AI, นักจิตวิทยา, นักสื่อสารมวลชน\n3. ทักษะใดที่ AI ยังสู้ความเข้าใจมนุษย์ไม่ได้?'}}));
+      notify('โหลดตัวอย่างสถานการณ์: เวทีอภิปราย & เสวนาคมคาย');
+    }else if(m==='public'){
+      setData(d=>({...d,form:{...d.form,mode:'public',topic:'สุนทรพจน์: พลังการสื่อสารเพื่อการเปลี่ยนแปลงสังคมที่จับต้องได้',keyMessage:'เสียงของทุกคนมีคุณค่า เมื่อเราพูดด้วยความจริงใจและนำเสนอทางออกร่วม',duration:5,tone:'อบอุ่น ชัดเจน ให้เกียรติผู้ฟัง',purpose:'ปราศรัยสร้างแรงบันดาลใจและเชื่อมโยงผู้คนเข้าสู่เป้าหมายร่วม',product:'ผู้ฟังเกิดความหวังและพร้อมร่วมขับเคลื่อน 1 พันธกิจ',participants:'ประชาชนทั่วไป คนทำงานรุ่นใหม่ และผู้นำการเปลี่ยนแปลง',problems:'ผู้ฟังอาจรู้สึกว่าปัญหายากเกินแก้ ต้องเน้นทางออกที่ทำได้จริงและให้กำลังใจ',planTopics:'1. ประโยคเปิดกระตุกคิด (Hook)\n2. สภาพปัญหาและเรื่องเล่าสะท้อนใจ\n3. ทางออกเชิงบวกและประโยคจำ (Soundbite)',planExamples:'1. โลกไม่ได้เปลี่ยนเพราะคนพูดเก่ง แต่เปลี่ยนเพราะคนฟังเข้าใจและลงมือทำ\n2. กรณีศึกษาชุมชนที่เริ่มจากจุดเล็กๆ\n3. ก้าวแรกเริ่มที่ตัวเรา และก้าวต่อไปเริ่มที่เราจับมือกัน'}}));
+      notify('โหลดตัวอย่างสถานการณ์: เวทีปราศรัย (สร้างประเด็นจำ)');
     }else{
-      notify('เลือกโหมดพิธีการ ชุมชน หรือเสวนา เพื่อดูตัวอย่างสถานการณ์จริง');
+      notify('เลือกโหมดพิธีการ ปราศรัย อภิปราย หรือชุมชน เพื่อดูตัวอย่างสถานการณ์จริง');
     }
   };
 
@@ -822,6 +865,81 @@ function App(){
                   </label>
                   <span>{data.script.length.toLocaleString()} ตัวอักษร</span>
                 </div>
+
+                {/* DeepSeek AI Speech Polish & Analysis Bar */}
+                <div className="ai-polish-bar">
+                  <div className="ai-polish-title">
+                    <Sparkles size={16}/>
+                    <strong>DeepSeek AI เกลาบทพูด & วิเคราะห์ประเด็น:</strong>
+                  </div>
+                  <div className="toolbar">
+                    <button
+                      className="btn ai-btn"
+                      disabled={aiLoading||!data.script.trim()}
+                      onClick={()=>callAiAssistant('polish')}
+                      title="เกลาภาษาให้คมคาย สละสลวย น่าสนใจ พร้อมใส่วรรคตอน /"
+                    >
+                      {aiLoading && aiAction==='polish' ? <Loader2 className="spin" size={15}/> : <Sparkles size={15}/>}
+                      เกลาคำพูดให้น่าสนใจ (Polish)
+                    </button>
+                    <button
+                      className="btn"
+                      disabled={aiLoading||!data.script.trim()}
+                      onClick={()=>callAiAssistant('hooks')}
+                      title="สร้าง 3 ประโยคเปิดกระตุกคิด (Hooks) และ 3 ประโยคจำ (Golden Soundbites)"
+                    >
+                      {aiLoading && aiAction==='hooks' ? <Loader2 className="spin" size={15}/> : <Bookmark size={15}/>}
+                      ประเด็นจำ & คำคม (Soundbites)
+                    </button>
+                    <button
+                      className="btn"
+                      disabled={aiLoading||!data.script.trim()}
+                      onClick={()=>callAiAssistant('debate_analysis')}
+                      title="วิเคราะห์ประเด็นอภิปราย จุดแข็ง ข้อโต้แย้งที่อาจเจอ และวิธีตอบกลับ (Pivot)"
+                    >
+                      {aiLoading && aiAction==='debate_analysis' ? <Loader2 className="spin" size={15}/> : <ShieldCheck size={15}/>}
+                      วิเคราะห์อภิปราย (Debate Analysis)
+                    </button>
+                  </div>
+                </div>
+
+                {/* AI Assistant Output Card */}
+                {aiAssistantResult&&(
+                  <div className="ai-polish-result">
+                    <div className="ai-polish-result-head">
+                      <h3>
+                        <Sparkles size={16}/>
+                        {aiAssistantResult.action==='polish'?'ผลลัพธ์การเกลาบทพูดด้วย DeepSeek AI':
+                         aiAssistantResult.action==='hooks'?'ประโยคเปิด (Hooks) และ ประโยคจำ (Soundbites)':
+                         'การวิเคราะห์ประเด็นอภิปราย & แนวทางตอบกลับ'}
+                      </h3>
+                      <div className="toolbar">
+                        <button className="btn primary" onClick={()=>{
+                          setData(d=>({...d,script:aiAssistantResult.text}));
+                          setAiAssistantResult(null);
+                          notify('แทนที่บทพูดด้วยข้อความที่เกลาแล้ว');
+                        }}>
+                          <Check size={14}/> แทนที่ในบทพูด
+                        </button>
+                        <button className="btn" onClick={()=>{
+                          setData(d=>({...d,script:d.script + '\n\n---\n\n' + aiAssistantResult.text}));
+                          setAiAssistantResult(null);
+                          notify('แทรกต่อท้ายบทพูดเรียบร้อย');
+                        }}>
+                          <Plus size={14}/> แทรกต่อท้าย
+                        </button>
+                        <button className="btn" onClick={()=>copy(aiAssistantResult.text)}>
+                          <Copy size={14}/> คัดลอก
+                        </button>
+                        <button className="icon-btn" aria-label="ปิดกล่องแนะนำ" onClick={()=>setAiAssistantResult(null)}>
+                          <X size={16}/>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="ai-polish-text">{aiAssistantResult.text}</div>
+                  </div>
+                )}
+
                 <textarea
                   className="script-editor"
                   maxLength={100000}

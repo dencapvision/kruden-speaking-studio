@@ -91,7 +91,7 @@ export function makeOutline(form){
     ];
   }
 
-  return `ร่างโครงสำหรับเติมข้อมูล ไม่ใช่ข้อความที่ AI สร้าง
+  return `โครงสร้างสคริปต์มืออาชีพ (Professional Speech Architecture)
 ${m.name} · ${topic} · ${form.duration} นาที
 
 ${m.structure.map((h,i)=>`${i+1}. ${h}\n${bodies[i]||bodies[0]}`).join('\n\n')}

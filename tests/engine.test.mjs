@@ -13,7 +13,7 @@ test('all five speaking modes produce usable prompts without inventing evidence'
     assert.ok(prompt.includes(mode.name));
     assert.ok(prompt.includes('ห้ามเติมสถิติ'));
     assert.ok(prompt.includes('ไม่ชี้นำ'));
-    assert.ok(makeOutline(form).includes('ไม่ใช่ข้อความที่ AI สร้าง'));
+    assert.ok(makeOutline(form).includes('โครงสร้างสคริปต์มืออาชีพ'));
   }
 });
 

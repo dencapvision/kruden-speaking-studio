@@ -27,17 +27,17 @@ export async function onRequestPost(context) {
     }
 
     const body = await request.json();
-    const { prompt, customApiKey, passcode } = body;
+    const { prompt, action = 'generate', customApiKey, passcode } = body;
 
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return new Response(JSON.stringify({ error: 'กรุณาระบุพรอมป์ต์สำหรับสร้างบทพูด' }), {
+      return new Response(JSON.stringify({ error: 'กรุณาระบุข้อความหรือพรอมป์ต์สำหรับประมวลผล' }), {
         status: 400,
         headers: corsHeaders
       });
     }
 
-    if (prompt.length > 25000) {
-      return new Response(JSON.stringify({ error: 'เนื้อหาพรอมป์ต์ยาวเกินขีดจำกัด (สูงสุด 25,000 ตัวอักษร)' }), {
+    if (prompt.length > 30000) {
+      return new Response(JSON.stringify({ error: 'เนื้อหายาวเกินขีดจำกัด (สูงสุด 30,000 ตัวอักษร)' }), {
         status: 400,
         headers: corsHeaders
       });
@@ -47,18 +47,16 @@ export async function onRequestPost(context) {
     let apiKey = customApiKey ? String(customApiKey).trim() : null;
 
     if (!apiKey) {
-      // Use server-side DEEPSEEK_API_KEY if available
       const serverKey = env.DEEPSEEK_API_KEY;
       if (!serverKey) {
         return new Response(
           JSON.stringify({
-            error: 'ยังไม่ได้ตั้งค่า DEEPSEEK_API_KEY บนเซิร์ฟเวอร์ Cloudflare Pages กรุณาใส่ API Key ของคุณในเมนูตั้งค่า'
+            error: 'ยังไม่ได้ตั้งค่า DEEPSEEK_API_KEY บนระบบ กรุณากรอก API Key ของคุณในเมนูตั้งค่า'
           }),
           { status: 401, headers: corsHeaders }
         );
       }
 
-      // If server requires a student passcode, verify it
       const requiredPasscode = env.STUDENT_PASSCODE;
       if (requiredPasscode && String(requiredPasscode).trim().length > 0) {
         const userPasscode = passcode || request.headers.get('X-Student-Passcode');
@@ -75,22 +73,52 @@ export async function onRequestPost(context) {
       apiKey = serverKey;
     }
 
-    // Call DeepSeek API
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
+    // Tailored System Prompts based on Action
+    let systemPrompt = '';
+    let temperature = 0.6;
 
-    const systemPrompt = `คุณคือผู้เชี่ยวชาญด้านการสื่อสารสาธารณะและ Learning Experience Designer ประจำ KRUDEN Speaking Studio ภายใต้แนวคิด Human • Heart • Harmony ของครูเด่น มาสเตอร์ฟา
-หน้าที่หลักของคุณคือช่วยผู้เรียนใน Script Lab ร่างบทพูดและเตรียมตัวก่อนขึ้นเวทีจริงตาม 3 รูปแบบหลัก:
+    if (action === 'polish') {
+      systemPrompt = `คุณคือ Speechwriter และ Verbal Coach มืออาชีพระดับแนวหน้า ประจำ KRUDEN Speaking Studio ภายใต้แนวคิด Human • Heart • Harmony ของครูเด่น มาสเตอร์ฟา
+หน้าที่ของคุณคือ:
+1. ปรับเกลาบทพูดที่ผู้ใช้ส่งมาให้สละสลวย ทรงพลัง ชัดถ้อยชัดคำ และเป็นธรรมชาติของภาษามนุษย์
+2. ใส่เครื่องหมาย / เพื่อกำหนดจังหวะการเว้นวรรคและการหายใจสำหรับการพูดจริงบน Teleprompter
+3. เน้นสร้างประโยคจำ (Golden Soundbites / Punchline) ให้ผู้ฟังประทับใจ
+4. คงเนื้อหาข้อเท็จจริงเดิมไว้ ไม่บิดเบือน ไม่แต่งสถิติหรือข้อเท็จจริงเอง`;
+      temperature = 0.5;
+    } else if (action === 'hooks') {
+      systemPrompt = `คุณคือ Keynote & Soundbite Architect ประจำ KRUDEN Speaking Studio
+หน้าที่ของคุณคือสร้าง:
+1. 3 ประโยคเปิดที่จับใจผู้ฟังทันที (Opening Hooks): ทั้งแบบคำถามชวนคิด (Question), เรื่องเล่าเปรียบเทียบ (Story/Metaphor), และสถิติหรือข้อเท็จจริงกระตุกความคิด (Provocative Fact)
+2. 3 ประโยคทองคำที่คนฟังต้องจดจำ (Memorable Soundbites / Golden Quotes) ความยาวไม่เกิน 1-2 บรรทัด
+3. แนวทาง Call-to-Action ที่สร้างพลังร่วม`;
+      temperature = 0.7;
+    } else if (action === 'debate_analysis') {
+      systemPrompt = `คุณคือผู้เชี่ยวชาญการวิเคราะห์ประเด็นอภิปรายและการสื่อสารเชิงนโยบายสาธารณะ ประจำ KRUDEN Speaking Studio
+หน้าที่ของคุณคือวิเคราะห์ประเด็นที่ส่งมาใน 4 มิติ:
+1. จุดแข็งและแก่นสารสำคัญของประเด็น (Core Arguments)
+2. ข้อกังวลหรือมุมมองต่างที่อาจเจอจากผู้ฟังหรือฝ่ายตรงข้าม (Counter-Arguments / Anticipated Questions)
+3. ยุทธศาสตร์การตอบกลับและเชื่อมโยง (Pivot Strategy) เพื่อรักษาสมดุลและเปิดพื้นที่รับฟังตามแนวทาง STOP Framework
+4. สรุปประเด็นสื่อสารเชิงบวกที่ไม่โจมตีบุคคล (Constructive Takeaways)`;
+      temperature = 0.5;
+    } else {
+      // Default: generate full script from 5Ps
+      systemPrompt = `คุณคือผู้เชี่ยวชาญด้านการสื่อสารสาธารณะและ Learning Experience Designer ประจำ KRUDEN Speaking Studio ภายใต้แนวคิด Human • Heart • Harmony ของครูเด่น มาสเตอร์ฟา
+หน้าที่หลักของคุณคือช่วยผู้เรียนใน Script Lab ร่างบทพูดและเตรียมตัวก่อนขึ้นเวทีจริงตามรูปแบบการสื่อสาร:
 1. เวทีพิธีการ (กล่าวต้อนรับ / เปิดงาน): ใช้โครงสร้าง 4S (Start กล่าวทักทายอบอุ่น, Significance ชี้ความสำคัญ, Sequence ลำดับรายการ, Send-off ส่งต่ออย่างสง่างาม)
 2. เวทีชุมชน (เปิดรับฟังความคิดเห็น): ใช้ภาษาที่เป็นกันเอง สร้างบรรยากาศพื้นที่ปลอดภัย ไม่ตัดสิน รับฟังความเห็นต่างอย่างเปิดกว้างและไม่ชี้นำ
-3. เวทีเสวนา (แนะนำผู้พูดและดำเนินรายการ): เกริ่นประเด็นให้ผู้ฟังตื่นเต้น แนะนำวิทยากรอย่างกระชับมีเกียรติ และโยนคำถามนำเปิดมุมมอง
+3. เวทีเสวนาและอภิปราย: เกริ่นประเด็นให้ผู้ฟังตื่นเต้น แนะนำวิทยากรอย่างกระชับมีเกียรติ โยนคำถามนำ และวิเคราะห์ประเด็นโต้แย้งอย่างคมคาย
+4. ปราศรัยเชิงนโยบาย: นำเสนอทางเลือก ข้อเท็จจริง ผลกระทบ และสร้างประเด็นจำ (Soundbites)
 
 หลักเกณฑ์สำคัญ:
 - นำข้อมูลจาก 5Ps Process (Purpose, Product, Participants, Problems, Plan) มาถักทอเป็นสคริปต์ที่ใช้งานได้จริง
 - ใช้เครื่องหมาย / คั่นจุดเว้นวรรคจังหวะการพูดและการหายใจ (เพื่อให้ผู้พูดนำไปซ้อมใน Teleprompter ได้ทันที)
-- แยกข้อเท็จจริง ข้อเสนอ และสิ่งที่ต้องตรวจสอบให้ชัดเจน ห้ามแต่งตัวเลข สถิติ หรือคำพูดบุคคลเองเด็ดขาด
 - จัดทำ Cue Card สรุป 3–5 ข้อ สำหรับใช้บนเวที
 - เตรียมแนวทางรับมือปัญหา (Problems / STOP Framework: ตั้งสติ ประเมินเหตุ เลือกทางออก ดำเนินต่อ)`;
+      temperature = 0.6;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 50000);
 
     const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -104,8 +132,8 @@ export async function onRequestPost(context) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.6,
-        max_tokens: 2500
+        temperature,
+        max_tokens: 3000
       }),
       signal: controller.signal
     }).finally(() => clearTimeout(timeout));
@@ -150,4 +178,3 @@ export async function onRequestPost(context) {
     );
   }
 }
-
