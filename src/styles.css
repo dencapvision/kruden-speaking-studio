@@ -66,6 +66,204 @@
 .admin-table th{background:#f3f6ee;color:#274c37;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
 .admin-table td{padding:10px 12px;border-bottom:1px solid #edf0ea;vertical-align:middle}
 
+/* Responsive visibility helpers */
+.desktop-only { display: inline-flex; }
+.mobile-only { display: none; }
+
+@media (max-width: 800px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+}
+
+/* Enhanced Topbar on Mobile */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-app-brand {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  color: #173e35;
+}
+
+.mobile-app-brand strong {
+  font-family: Prompt, sans-serif;
+  font-size: 16px;
+  letter-spacing: 1.5px;
+}
+
+.mobile-app-brand span {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #6e8076;
+}
+
+.mobile-app-brand .brand-dot {
+  color: #b78a22;
+}
+
+@media (max-width: 800px) {
+  .topbar {
+    height: 56px !important;
+    padding: 0 14px !important;
+  }
+  .mobile-app-brand {
+    display: inline-flex;
+  }
+  .breadcrumb {
+    display: none !important;
+  }
+  .classroom-badge {
+    padding: 5px 10px;
+    font-size: 11px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .badge-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-header-btn {
+    padding: 6px 10px !important;
+    min-height: 34px !important;
+  }
+  .eyebrow {
+    display: none !important;
+  }
+}
+
+/* Mobile Sequence Cards (Timeline Card View) */
+.seq-mobile-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seq-m-item-card {
+  background: #ffffff;
+  border: 1px solid #e1e9df;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(24, 62, 53, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seq-m-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.seq-m-index {
+  font-family: Prompt, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #275646;
+  background: #edf5ea;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.seq-m-speaker-tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: #1a4f3e;
+  background: #f1f6ef;
+  border: 1px solid #d8e5d5;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.seq-m-title {
+  font-size: 15px;
+  color: #153b32;
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.seq-m-cue-box {
+  background: #fcfbf5;
+  border-left: 3px solid #d9b47a;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 11.5px;
+  color: #4f3d1b;
+  line-height: 1.5;
+}
+
+.seq-m-cue-box small, .seq-m-dialogue-box small {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #8c7646;
+  margin-bottom: 2px;
+}
+
+.seq-m-dialogue-box {
+  background: #f8faf6;
+  border: 1px dashed #d0ded0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #244336;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.seq-m-dialogue-box small {
+  color: #4b6f5d;
+}
+
+.seq-m-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #eef3ec;
+}
+
+.seq-m-btn {
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  min-height: 32px !important;
+  border-radius: 8px !important;
+}
+
+.seq-m-shift-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+}
+
+/* Prompt Output Textarea Styling for High Readability */
+.prompt-output {
+  width: 100%;
+  border: 1px solid #e0e8dc !important;
+  background: #fbfdfa !important;
+  line-height: 2.1 !important;
+  padding: 20px 22px !important;
+  resize: vertical;
+  min-height: 480px;
+  color: #1e3d31 !important;
+  font-size: 14px !important;
+  border-radius: 16px !important;
+  white-space: pre-wrap;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+  font-family: 'Noto Sans Thai', sans-serif !important;
+}
+
 /* ==========================================================
    KRUDEN MODERN MOBILE APP DESIGN SYSTEM (iOS / Android Feel)
    ========================================================== */

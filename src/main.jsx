@@ -10,7 +10,7 @@ import {
   Bot,Loader2,ListOrdered,Calendar
 } from 'lucide-react';
 import {initialState,initialSequences,MODES,agenda,CANVA_URL} from './data.js';
-import {makePrompt,makeOutline,modeFor,safeUrl,validateBackup} from './engine.js';
+import {makePrompt,makeOutline,modeFor,safeUrl,validateBackup,cleanScriptOutput} from './engine.js';
 import {
   loadStoredState,saveStoredState,triggerDownload,
   exportBackupJson,exportSequenceMarkdown,getAiSettings,saveAiSettings,
@@ -208,7 +208,7 @@ function App(){
       if(!res.ok){
         throw Error(json.error||'ไม่สามารถเรียกใช้ AI ได้');
       }
-      setAiResult(json.text);
+      setAiResult(cleanScriptOutput(json.text));
       setAiTab('ai');
       notify('AI สร้างบทพูดให้เรียบร้อยแล้ว');
     }catch(err){
@@ -252,7 +252,7 @@ function App(){
       if(!res.ok){
         throw Error(json.error||'ไม่สามารถเรียกใช้ AI ได้');
       }
-      setAiAssistantResult({text:json.text,action});
+      setAiAssistantResult({text:cleanScriptOutput(json.text),action});
       notify('AI ประมวลผลและเกลาคำพูดให้เรียบร้อยแล้ว');
     }catch(err){
       notify('ข้อผิดพลาด AI: '+err.message);
@@ -363,14 +363,22 @@ function App(){
 
       <div className="main-shell">
         <header className="topbar">
-          <div className="breadcrumb">
+          <div className="topbar-left">
             <button className="icon-btn mobile-menu" aria-label="เปิดเมนู" onClick={()=>setMobile(true)}>
               <Menu size={22}/>
             </button>
-            <span>พื้นที่ทำงาน</span>
-            <ChevronRight size={14}/>
-            <strong>{active[2]}</strong>
+            <div className="mobile-app-brand">
+              <Mic2 size={18} className="brand-dot"/>
+              <strong>KRUDEN</strong>
+              <span>STUDIO</span>
+            </div>
+            <div className="breadcrumb desktop-only">
+              <span>พื้นที่ทำงาน</span>
+              <ChevronRight size={14}/>
+              <strong>{active[2]}</strong>
+            </div>
           </div>
+
           <div className="topbar-right">
             {classroomSession.entered ? (
               <div
@@ -380,32 +388,33 @@ function App(){
                 style={{cursor:'pointer'}}
               >
                 <span className="classroom-dot"/>
-                <span>ห้องเรียน: <strong>{classroomSession.studentName ? `${classroomSession.studentName} (${classroomSession.passcode})` : classroomSession.passcode}</strong></span>
+                <span className="badge-name-text">
+                  <strong>{classroomSession.studentName || 'ผู้เรียน'}</strong>
+                  <span className="badge-code-sub desktop-only">({classroomSession.passcode})</span>
+                </span>
               </div>
             ) : (
               <button
-                className="btn primary"
-                style={{padding:'6px 14px',fontSize:'11px'}}
+                className="btn primary compact-btn"
                 onClick={()=>setClassroomModal(true)}
                 title="กรอกรหัสเข้าห้องเรียนที่ได้รับจากครูเด่น"
               >
-                <KeyRound size={14}/> รหัสเข้าห้องเรียน
+                <KeyRound size={14}/> <span className="desktop-only">รหัสเข้าห้องเรียน</span>
               </button>
             )}
 
             <button
-              className="btn"
-              style={{padding:'6px 12px',fontSize:'11px'}}
+              className="btn admin-header-btn"
               onClick={()=>setAdminModal(true)}
               title="แผงควบคุมครูเด่น (Admin ออกรหัสห้องเรียน)"
             >
-              <ShieldCheck size={14}/> ครูเด่น (Admin)
+              <ShieldCheck size={16}/> <span className="desktop-only">ครูเด่น (Admin)</span>
             </button>
 
-            <span className="saved-indicator">
+            <span className="saved-indicator desktop-only">
               <CheckCircle2 size={14}/> {storageError?'รอสำรองข้อมูล':'บันทึกอัตโนมัติ'}
             </span>
-            <a className="text-link" href={CANVA_URL} target="_blank" rel="noreferrer">
+            <a className="text-link desktop-only" href={CANVA_URL} target="_blank" rel="noreferrer">
               หลักการสื่อสาร Canva <ArrowUpRight size={15}/>
             </a>
           </div>
@@ -901,8 +910,8 @@ function App(){
               </div>
             </section>
 
-            {/* Sequence Table */}
-            <div className="seq-table-wrapper">
+            {/* Desktop Sequence Table (Visible on Tablets & Desktops) */}
+            <div className="seq-table-wrapper desktop-only">
               <table className="seq-table" aria-label="ตารางลำดับคิวงานพิธีกร">
                 <thead>
                   <tr>
@@ -962,6 +971,59 @@ function App(){
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Sequence Cards (Dedicated View for Mobile Phones) */}
+            <div className="seq-mobile-card-list mobile-only">
+              {(currentSeq.items||[]).map((item,idx)=>(
+                <div className="seq-m-item-card" key={item.id}>
+                  <div className="seq-m-head">
+                    <span className="seq-m-index">#{String(idx+1).padStart(2,'0')}</span>
+                    <span className="seq-time-pill">{item.time||'-'} ({item.duration||0} นาที)</span>
+                    <span className="seq-m-speaker-tag">{item.speaker||'พิธีกร'}</span>
+                  </div>
+
+                  <h3 className="seq-m-title">{item.segment}</h3>
+
+                  {item.cue&&(
+                    <div className="seq-m-cue-box">
+                      <small>คิว / เทคนิคเวที:</small>
+                      <p>{item.cue}</p>
+                    </div>
+                  )}
+
+                  {item.dialogue&&(
+                    <div className="seq-m-dialogue-box">
+                      <small>บทพูดสำคัญ:</small>
+                      <p>{item.dialogue}</p>
+                    </div>
+                  )}
+
+                  <div className="seq-m-actions-bar">
+                    <div className="toolbar">
+                      <button className="btn seq-m-btn" onClick={()=>setEditingItem({item,seqId:currentSeq.id})}>
+                        <Pencil size={13}/> แก้ไข
+                      </button>
+                      <button className="btn seq-m-btn danger" onClick={()=>setDeleteItem({seqId:currentSeq.id,itemId:item.id,segment:item.segment})}>
+                        <Trash2 size={13}/> ลบ
+                      </button>
+                    </div>
+                    <div className="toolbar">
+                      <button className="icon-btn seq-m-shift-btn" disabled={idx===0} onClick={()=>moveSequenceItem(currentSeq.id,item.id,-1)} title="เลื่อนขึ้น">
+                        <MoveUp size={15}/>
+                      </button>
+                      <button className="icon-btn seq-m-shift-btn" disabled={idx===currentSeq.items.length-1} onClick={()=>moveSequenceItem(currentSeq.id,item.id,1)} title="เลื่อนลง">
+                        <MoveDown size={15}/>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {(!currentSeq.items||currentSeq.items.length===0)&&(
+                <div className="empty-state" style={{padding:'30px 15px'}}>
+                  <p>ยังไม่มีคิวรายการ กดปุ่ม “+ เพิ่มช่วงรายการ” ด้านบนเพื่อสร้างคิวแรก</p>
+                </div>
+              )}
             </div>
 
             {/* Print Sheet Layout (visible only when printing) */}

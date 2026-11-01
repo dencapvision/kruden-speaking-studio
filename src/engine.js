@@ -8,6 +8,83 @@ export const modeFor=id=>{
   return MODES.find(m=>m.id===id)||MODES[0];
 };
 
+export function cleanScriptOutput(text){
+  if(!text||typeof text!=='string')return '';
+  const lines=text.split('\n');
+  const cleaned=[];
+  
+  for(let i=0;i<lines.length;i++){
+    let line=lines[i].trim();
+
+    // Skip redundant app banner or title
+    if(/KRUDEN Speaking Studio/i.test(line)&&!line.includes(':')){
+      continue;
+    }
+
+    // Skip redundant warning boilerplate
+    if(line.includes('หมายเหตุก่อนใช้')||(line.includes('[ต้องตรวจสอบ]')&&line.includes('ห้ามเติมสถิติ'))){
+      continue;
+    }
+
+    // Horizontal divider
+    if(/^(\-{3,}|\*{3,}|_{3,})$/.test(line)){
+      cleaned.push('──────────────────────────────────────────');
+      continue;
+    }
+
+    // Markdown table divider e.g. |---|---|
+    if(/^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$/.test(line)){
+      continue;
+    }
+
+    // Markdown table rows e.g. | 1 | Start | ทักทาย | 0:00-0:35 |
+    if(line.startsWith('|')&&line.endsWith('|')){
+      const cells=line.split('|').map(c=>c.trim().replace(/\*\*/g,'')).filter(Boolean);
+      // Skip header row
+      if(cells.some(c=>c.includes('ช่วง')||c.includes('ลำดับ')||c.includes('โครงสร้าง')||c.includes('เนื้อหา'))){
+        continue;
+      }
+      if(cells.length>=2){
+        const num=cells[0];
+        const title=cells[1]||'';
+        const desc=cells[2]||'';
+        const time=cells[3]?` (เวลา ${cells[3]} น.)`:'';
+        if(desc){
+          cleaned.push(`${num}. ${title} — ${desc}${time}`);
+        }else{
+          cleaned.push(`${num}. ${title}${time}`);
+        }
+        continue;
+      }
+    }
+
+    // Strip Markdown headings (#, ##, ###)
+    line=line.replace(/^#{1,6}\s*/,'');
+
+    // Strip blockquote markers (> ⚠️ or >)
+    line=line.replace(/^>\s*(⚠️\s*)?/,'');
+
+    // Strip bold/italic markdown (**text**, *text*, __text__)
+    line=line.replace(/\*\*([^*]+)\*\*/g,'$1');
+    line=line.replace(/__([^_]+)__/g,'$1');
+
+    // Simplify section titles like "(1) โครงประเด็น" or "(2) ร่างสคริปต์"
+    if(/^\(?\d+\)?\s*ร่างสคริปต์/i.test(line)){
+      continue;
+    }
+
+    // Replace weird brackets 【...】 with (...)
+    line=line.replace(/【([^】]+)】/g,'($1)');
+
+    // Strip AI emojis that look robotic or cluttered
+    line=line.replace(/[🤖⚠️✨💡]/g,'');
+
+    cleaned.push(line.trim());
+  }
+
+  return cleaned.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+
 export function makePrompt(form,sources=[]){
   const m=modeFor(form.mode);
   const p5=[];
@@ -19,7 +96,7 @@ export function makePrompt(form,sources=[]){
   if(form.planExamples)p5.push(`- Plan Examples (ตัวอย่าง/ขยายความ): ${form.planExamples}`);
   const p5Text=p5.length?`\n\nกระบวนการเตรียมตัว 5Ps Process:\n${p5.join('\n')}`:'';
 
-  return `บทบาท: คุณคือผู้ช่วยเตรียมการสื่อสารสาธารณะและร่างบทพูดประจำ KRUDEN Speaking Studio ภายใต้แนวคิด Human • Heart • Harmony
+  return `บทบาท: คุณคือ Speechwriter และผู้เชี่ยวชาญการสื่อสารสาธารณะประจำ KRUDEN Speaking Studio ภายใต้แนวคิด Human • Heart • Harmony
 งาน/เวที: ${m.name} (${m.sub||m.short})
 หัวข้อ: ${form.topic?.trim()||'[ระบุหัวข้อ]'}
 เวลา: ${form.duration} นาที
@@ -44,8 +121,14 @@ ${m.structure.map((v,i)=>`${i+1}. ${v}`).join('\n')}
 - แยกข้อเท็จจริง ข้อเสนอ และสมมติฐาน ใส่ [ต้องตรวจสอบ] เมื่อหลักฐานไม่พอ ห้ามเติมสถิติหรือข้อเท็จจริงเอง
 - ใส่เครื่องหมาย / เพื่อกำหนดจุดเว้นวรรคจังหวะการพูดและการหายใจสำหรับ Teleprompter
 
-ผลลัพธ์: (1) โครงประเด็นพร้อมเวลารวม ${form.duration} นาที (2) ร่างสคริปต์พร้อมจุดเว้นวรรค / (3) Cue Card สรุปไม่เกิน 5 ข้อ (4) คำถามต่อยอด 3 ข้อ
-หมายเหตุ: เนื้อหาที่สร้างต้องผ่านการตรวจโดยผู้ใช้ก่อนใช้งานจริง`;
+ข้อกำหนดรูปแบบการแสดงผลที่ต้องทำตาม 100%:
+1. ห้ามใช้ตารางเด็ดขาด (ห้ามใช้ markdown table |...|)
+2. ห้ามใช้สัญลักษณ์ Markdown ดิบ เช่น #, ##, ###, **, ---, >, หรือวงเล็บ 【 】
+3. ห้ามใช้อีโมจิหรือไอคอนที่ดูเป็น AI สังเคราะห์
+4. จัดแบ่งเนื้อหาเป็นส่วนๆ ชัดเจน โดยใช้หัวข้อภาษาไทยธรรมดา เช่น "ส่วนที่ 1: ...", "ส่วนที่ 2: ..."
+5. จัดทำหัวข้อ "ประเด็นสรุปสำหรับพกขึ้นเวที (Cue Notes)" สรุป 3–5 ข้อ เป็นรายการ 1. 2. 3. เรียบร้อย สะอาดตา
+
+ผลลัพธ์: ร่างสคริปต์ฉบับสมบูรณ์ที่อ่านง่าย จัดเป็นส่วนๆ ชัดเจน พร้อมจุดเว้นวรรค / และประเด็นสรุป Cue Notes`;
 }
 
 export function makeOutline(form){
@@ -92,12 +175,14 @@ export function makeOutline(form){
   }
 
   return `โครงสร้างสคริปต์มืออาชีพ (Professional Speech Architecture)
-${m.name} · ${topic} · ${form.duration} นาที
+เวที: ${m.name} | หัวข้อ: ${topic} | เวลาโดยประมาณ: ${form.duration} นาที
+──────────────────────────────────────────
 
-${m.structure.map((h,i)=>`${i+1}. ${h}\n${bodies[i]||bodies[0]}`).join('\n\n')}
+${m.structure.map((h,i)=>`ส่วนที่ ${i+1}: ${h}\n\n${bodies[i]||bodies[0]}`).join('\n\n──────────────────────────────────────────\n\n')}
 
-Cue Card
-${m.structure.map(v=>`• ${v}`).join('\n')}
+──────────────────────────────────────────
+ประเด็นสรุปสำหรับพกขึ้นเวที (Cue Notes):
+${m.structure.map((v,i)=>`${i+1}. ${v}`).join('\n')}
 
 ก่อนใช้จริง: ตรวจแหล่งอ้างอิง ข้อจำกัด และชื่อผู้เกี่ยวข้องทั้งหมด`;
 }

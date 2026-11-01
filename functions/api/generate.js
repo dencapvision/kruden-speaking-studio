@@ -1,3 +1,80 @@
+function cleanScriptOutput(text) {
+  if (!text || typeof text !== 'string') return '';
+  const lines = text.split('\n');
+  const cleaned = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    // Skip redundant app banner or title
+    if (/KRUDEN Speaking Studio/i.test(line) && !line.includes(':')) {
+      continue;
+    }
+
+    // Skip redundant warning boilerplate
+    if (line.includes('หมายเหตุก่อนใช้') || (line.includes('[ต้องตรวจสอบ]') && line.includes('ห้ามเติมสถิติ'))) {
+      continue;
+    }
+
+    // Horizontal divider
+    if (/^(\-{3,}|\*{3,}|_{3,})$/.test(line)) {
+      cleaned.push('──────────────────────────────────────────');
+      continue;
+    }
+
+    // Markdown table divider e.g. |---|---|
+    if (/^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$/.test(line)) {
+      continue;
+    }
+
+    // Markdown table rows e.g. | 1 | Start | ทักทาย | 0:00-0:35 |
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const cells = line.split('|').map(c => c.trim().replace(/\*\*/g, '')).filter(Boolean);
+      // Skip header row
+      if (cells.some(c => c.includes('ช่วง') || c.includes('ลำดับ') || c.includes('โครงสร้าง') || c.includes('เนื้อหา'))) {
+        continue;
+      }
+      if (cells.length >= 2) {
+        const num = cells[0];
+        const title = cells[1] || '';
+        const desc = cells[2] || '';
+        const time = cells[3] ? ` (เวลา ${cells[3]} น.)` : '';
+        if (desc) {
+          cleaned.push(`${num}. ${title} — ${desc}${time}`);
+        } else {
+          cleaned.push(`${num}. ${title}${time}`);
+        }
+        continue;
+      }
+    }
+
+    // Strip Markdown headings (#, ##, ###)
+    line = line.replace(/^#{1,6}\s*/, '');
+
+    // Strip blockquote markers (> ⚠️ or >)
+    line = line.replace(/^>\s*(⚠️\s*)?/, '');
+
+    // Strip bold/italic markdown (**text**, *text*, __text__)
+    line = line.replace(/\*\*([^*]+)\*\*/g, '$1');
+    line = line.replace(/__([^_]+)__/g, '$1');
+
+    // Simplify section titles like "(1) โครงประเด็น" or "(2) ร่างสคริปต์"
+    if (/^\(?\d+\)?\s*ร่างสคริปต์/i.test(line)) {
+      continue;
+    }
+
+    // Replace weird brackets 【...】 with (...)
+    line = line.replace(/【([^】]+)】/g, '($1)');
+
+    // Strip AI emojis that look robotic or cluttered
+    line = line.replace(/[🤖⚠️✨💡]/g, '');
+
+    cleaned.push(line.trim());
+  }
+
+  return cleaned.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
@@ -82,6 +159,20 @@ export async function onRequestPost(context) {
       apiKey = serverKey;
     }
 
+    const universalStyleRules = `
+ข้อกำหนดด้านภาษาและรูปแบบการแสดงผล (สำคัญที่สุด - ต้องปฏิบัติตาม 100%):
+1. ห้ามใช้ตารางเด็ดขาด (ห้ามใช้ markdown table เช่น |...| หรือ |---|---|) เพราะอ่านยากบนมือถือ
+2. ห้ามใช้สัญลักษณ์ Markdown ดิบ เช่น เครื่องหมาย #, ##, ###, **, ---, >, หรือวงเล็บ 【 】
+3. ห้ามใช้อีโมจิหรือไอคอนที่ดูเป็น AI สังเคราะห์ เช่น ⚠️, 🤖, ✨, 💡
+4. เขียนด้วยภาษาไทยระดับมืออาชีพ สละสลวย อบอุ่น สุภาพ เป็นธรรมชาติของภาษามนุษย์ เหมือนบทที่นักพูดมืออาชีพพิมพ์เตรียมไว้ขึ้นเวทีจริง
+5. จัดแบ่งเนื้อหาเป็นส่วนๆ ชัดเจน โดยใช้หัวข้อภาษาไทยธรรมดาที่มีบรรทัดว่างคั่น เช่น:
+   ส่วนที่ 1: ช่วงทักทายและเปิดเวที (เวลา 0:00 - 0:35 น.)
+   ส่วนที่ 2: วัตถุประสงค์และสาระสำคัญ (เวลา 0:35 - 1:35 น.)
+   ส่วนที่ 3: ลำดับกิจกรรมและแนวทางร่วมมือ (เวลา 1:35 - 2:30 น.)
+   ส่วนที่ 4: สรุปและส่งต่อ (เวลา 2:30 - 3:00 น.)
+6. ใช้เครื่องหมาย / สำหรับช่วยผู้พูดเว้นวรรคจังหวะหายใจในการซ้อมพูดเท่านั้น (เว้นพอดี ไม่ถี่เกินไป)
+7. จัดทำหัวข้อ "ประเด็นสรุปสำหรับพกขึ้นเวที (Cue Notes)" สรุป 3–5 ข้อ เป็นรายการ 1. 2. 3. สะอาดตา`;
+
     // Tailored System Prompts based on Action
     let systemPrompt = '';
     let temperature = 0.6;
@@ -92,14 +183,18 @@ export async function onRequestPost(context) {
 1. ปรับเกลาบทพูดที่ผู้ใช้ส่งมาให้สละสลวย ทรงพลัง ชัดถ้อยชัดคำ และเป็นธรรมชาติของภาษามนุษย์
 2. ใส่เครื่องหมาย / เพื่อกำหนดจังหวะการเว้นวรรคและการหายใจสำหรับการพูดจริงบน Teleprompter
 3. เน้นสร้างประโยคจำ (Golden Soundbites / Punchline) ให้ผู้ฟังประทับใจ
-4. คงเนื้อหาข้อเท็จจริงเดิมไว้ ไม่บิดเบือน ไม่แต่งสถิติหรือข้อเท็จจริงเอง`;
+4. คงเนื้อหาข้อเท็จจริงเดิมไว้ ไม่บิดเบือน ไม่แต่งสถิติหรือข้อเท็จจริงเอง
+
+${universalStyleRules}`;
       temperature = 0.5;
     } else if (action === 'hooks') {
       systemPrompt = `คุณคือ Keynote & Soundbite Architect ประจำ KRUDEN Speaking Studio
 หน้าที่ของคุณคือสร้าง:
 1. 3 ประโยคเปิดที่จับใจผู้ฟังทันที (Opening Hooks): ทั้งแบบคำถามชวนคิด (Question), เรื่องเล่าเปรียบเทียบ (Story/Metaphor), และสถิติหรือข้อเท็จจริงกระตุกความคิด (Provocative Fact)
 2. 3 ประโยคทองคำที่คนฟังต้องจดจำ (Memorable Soundbites / Golden Quotes) ความยาวไม่เกิน 1-2 บรรทัด
-3. แนวทาง Call-to-Action ที่สร้างพลังร่วม`;
+3. แนวทาง Call-to-Action ที่สร้างพลังร่วม
+
+${universalStyleRules}`;
       temperature = 0.7;
     } else if (action === 'debate_analysis') {
       systemPrompt = `คุณคือผู้เชี่ยวชาญการวิเคราะห์ประเด็นอภิปรายและการสื่อสารเชิงนโยบายสาธารณะ ประจำ KRUDEN Speaking Studio
@@ -107,7 +202,9 @@ export async function onRequestPost(context) {
 1. จุดแข็งและแก่นสารสำคัญของประเด็น (Core Arguments)
 2. ข้อกังวลหรือมุมมองต่างที่อาจเจอจากผู้ฟังหรือฝ่ายตรงข้าม (Counter-Arguments / Anticipated Questions)
 3. ยุทธศาสตร์การตอบกลับและเชื่อมโยง (Pivot Strategy) เพื่อรักษาสมดุลและเปิดพื้นที่รับฟังตามแนวทาง STOP Framework
-4. สรุปประเด็นสื่อสารเชิงบวกที่ไม่โจมตีบุคคล (Constructive Takeaways)`;
+4. สรุปประเด็นสื่อสารเชิงบวกที่ไม่โจมตีบุคคล (Constructive Takeaways)
+
+${universalStyleRules}`;
       temperature = 0.5;
     } else {
       // Default: generate full script from 5Ps
@@ -121,8 +218,10 @@ export async function onRequestPost(context) {
 หลักเกณฑ์สำคัญ:
 - นำข้อมูลจาก 5Ps Process (Purpose, Product, Participants, Problems, Plan) มาถักทอเป็นสคริปต์ที่ใช้งานได้จริง
 - ใช้เครื่องหมาย / คั่นจุดเว้นวรรคจังหวะการพูดและการหายใจ (เพื่อให้ผู้พูดนำไปซ้อมใน Teleprompter ได้ทันที)
-- จัดทำ Cue Card สรุป 3–5 ข้อ สำหรับใช้บนเวที
-- เตรียมแนวทางรับมือปัญหา (Problems / STOP Framework: ตั้งสติ ประเมินเหตุ เลือกทางออก ดำเนินต่อ)`;
+- จัดทำ Cue Notes สรุป 3–5 ข้อ สำหรับใช้บนเวที
+- เตรียมแนวทางรับมือปัญหา (Problems / STOP Framework: ตั้งสติ ประเมินเหตุ เลือกทางออก ดำเนินต่อ)
+
+${universalStyleRules}`;
       temperature = 0.6;
     }
 
@@ -164,7 +263,8 @@ export async function onRequestPost(context) {
     }
 
     const data = await deepseekResponse.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const rawContent = data.choices?.[0]?.message?.content || '';
+    const content = cleanScriptOutput(rawContent);
 
     return new Response(
       JSON.stringify({
