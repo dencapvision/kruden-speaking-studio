@@ -350,7 +350,9 @@ function App(){
             <Download size={17}/> ส่งออกไฟล์สำรอง
           </button>
           <div className="signature">
-            <span className="avatar">KD</span>
+            <span className="avatar">
+              <img src="/favicon-64x64.png" alt="ครูเด่น มาสเตอร์ฟา" />
+            </span>
             <div>
               <strong>ครูเด่น มาสเตอร์ฟา</strong>
               <small>Human • Heart • Harmony</small>
@@ -1592,7 +1594,7 @@ function AdminConsoleModal({classes,onSaveClasses,onClose,onNotify}){
 
   const copyShareLink=(cls)=>{
     const url=`${window.location.origin}/?code=${cls.code}&class=${encodeURIComponent(cls.name)}`;
-    const text=`🎤 ยินดีต้อนรับสู่ห้องเรียน KRUDEN Speaking Studio\nคลาส: ${cls.name}\nคลิกเข้าห้องเรียนอัตโนมัติ: ${url}\n(รหัสเข้าห้อง: ${cls.code})`;
+    const text=`🎤 KRUDEN Speaking Studio · ผู้ช่วยอัจฉริยะร่างบทพูด & จัดคิวพิธีกร\nคลาส: ${cls.name}\nเครื่องมือ AI ช่วยร่างบทพูดตามโครงสร้าง 5Ps วางซีเคว้นงานพิธีกร และซ้อมพูดจับเวลาบนเวทีจริง สื่อสารมั่นใจและทรงพลัง\nคลิกเข้าใช้งานได้ทันที: ${url}\n(รหัสเข้าห้อง: ${cls.code})`;
     navigator.clipboard.writeText(text).then(()=>{
       onNotify(`คัดลอกข้อความเชิญเข้าคลาส "${cls.name}" เรียบร้อยแล้ว นำไปวางใน LINE ได้เลย`);
     });
