@@ -112,3 +112,75 @@ export function saveAiSettings(settings) {
     return false;
   }
 }
+
+export const CLASSROOM_SESSION_KEY = 'kruden-classroom-session-v1';
+export const ADMIN_PASSCODES_KEY = 'kruden-admin-passcodes-v1';
+
+export function getClassroomSession() {
+  try {
+    const raw = localStorage.getItem(CLASSROOM_SESSION_KEY);
+    if (!raw) return { entered: false, studentName: '', passcode: '', className: '', role: 'guest' };
+    const p = JSON.parse(raw);
+    return {
+      entered: !!p.entered,
+      studentName: typeof p.studentName === 'string' ? p.studentName : '',
+      passcode: typeof p.passcode === 'string' ? p.passcode : '',
+      className: typeof p.className === 'string' ? p.className : '',
+      role: p.role === 'admin' ? 'admin' : (p.entered ? 'student' : 'guest')
+    };
+  } catch {
+    return { entered: false, studentName: '', passcode: '', className: '', role: 'guest' };
+  }
+}
+
+export function saveClassroomSession(session) {
+  try {
+    localStorage.setItem(CLASSROOM_SESSION_KEY, JSON.stringify(session));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearClassroomSession() {
+  try {
+    localStorage.removeItem(CLASSROOM_SESSION_KEY);
+  } catch {}
+}
+
+export const DEFAULT_ADMIN_CLASSES = [
+  {
+    id: 'class-mc14',
+    name: 'Public Speaking & MC Skills รุ่นที่ 14',
+    code: 'KD-MC14',
+    active: true,
+    createdAt: '2026-11-02'
+  },
+  {
+    id: 'class-speak2026',
+    name: 'Professional Speaking Masterclass 2026',
+    code: 'KD-SPEAK-2026',
+    active: true,
+    createdAt: '2026-11-01'
+  }
+];
+
+export function getAdminClasses() {
+  try {
+    const raw = localStorage.getItem(ADMIN_PASSCODES_KEY);
+    if (!raw) return DEFAULT_ADMIN_CLASSES;
+    const p = JSON.parse(raw);
+    return Array.isArray(p) && p.length ? p : DEFAULT_ADMIN_CLASSES;
+  } catch {
+    return DEFAULT_ADMIN_CLASSES;
+  }
+}
+
+export function saveAdminClasses(classes) {
+  try {
+    localStorage.setItem(ADMIN_PASSCODES_KEY, JSON.stringify(classes));
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -13,7 +13,9 @@ import {initialState,initialSequences,MODES,agenda,CANVA_URL} from './data.js';
 import {makePrompt,makeOutline,modeFor,safeUrl,validateBackup} from './engine.js';
 import {
   loadStoredState,saveStoredState,triggerDownload,
-  exportBackupJson,exportSequenceMarkdown,getAiSettings,saveAiSettings
+  exportBackupJson,exportSequenceMarkdown,getAiSettings,saveAiSettings,
+  getClassroomSession,saveClassroomSession,clearClassroomSession,
+  getAdminClasses,saveAdminClasses
 } from './storage.js';
 import {Modal,SequenceItemEditor,Rehearsal} from './components.jsx';
 import './styles.css';
@@ -32,6 +34,11 @@ function App(){
   const [data,setData]=useState(initialResult.state);
   const [corruptedWarning,setCorruptedWarning]=useState(initialResult.corrupted?initialResult.error:'');
   const [aiSettings,setAiSettings]=useState(()=>getAiSettings());
+  const [classroomSession,setClassroomSession]=useState(()=>getClassroomSession());
+  const [classroomModal,setClassroomModal]=useState(false);
+  const [adminModal,setAdminModal]=useState(false);
+  const [adminClasses,setAdminClasses]=useState(()=>getAdminClasses());
+  const [adminUnlocked,setAdminUnlocked]=useState(classroomSession.role==='admin');
   const [settingsModal,setSettingsModal]=useState(false);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiResult,setAiResult]=useState('');
@@ -59,6 +66,28 @@ function App(){
     clearTimeout(toastTimer.current);
     toastTimer.current=setTimeout(()=>setToast(''),4000);
   };
+
+  // One-click login via URL parameter ?code=...
+  useEffect(()=>{
+    try{
+      const params=new URLSearchParams(window.location.search);
+      const codeParam=params.get('code');
+      const classParam=params.get('class');
+      if(codeParam){
+        const matchedClass=adminClasses.find(c=>c.code.toLowerCase()===codeParam.trim().toLowerCase());
+        const newSession={
+          entered:true,
+          studentName:params.get('name')||classroomSession.studentName||'ผู้เรียน',
+          passcode:codeParam.trim(),
+          className:classParam?decodeURIComponent(classParam):(matchedClass?matchedClass.name:'Public Speaking & MC Skills'),
+          role:'student'
+        };
+        saveClassroomSession(newSession);
+        setClassroomSession(newSession);
+        notify(`เข้าสู่ห้องเรียนอัตโนมัติ: ${newSession.className} (${newSession.passcode})`);
+      }
+    }catch{}
+  },[]);
 
   useEffect(()=>{
     if(corruptedWarning)return;
@@ -153,6 +182,12 @@ function App(){
 
   // AI Generation
   const generateAiScript=async()=>{
+    const activePasscode = classroomSession.entered ? classroomSession.passcode : (aiSettings.passcode || '');
+    if(!activePasscode && !aiSettings.customApiKey){
+      setClassroomModal(true);
+      notify('กรุณากรอกรหัสห้องเรียนที่ได้รับจากครูเด่นเพื่อเริ่มใช้งาน AI');
+      return;
+    }
     const currentSources=data.sources.filter(s=>selectedSources.includes(s.id));
     const promptText=makePrompt(data.form,currentSources);
     setAiLoading(true);
@@ -161,11 +196,11 @@ function App(){
         method:'POST',
         headers:{
           'Content-Type':'application/json',
-          ...(aiSettings.passcode?{'X-Student-Passcode':aiSettings.passcode}:{})
+          ...(activePasscode?{'X-Student-Passcode':activePasscode}:{})
         },
         body:JSON.stringify({
           prompt:promptText,
-          passcode:aiSettings.passcode,
+          passcode:activePasscode,
           customApiKey:aiSettings.customApiKey
         })
       });
@@ -178,8 +213,8 @@ function App(){
       notify('AI สร้างบทพูดให้เรียบร้อยแล้ว');
     }catch(err){
       notify('ข้อผิดพลาด AI: '+err.message);
-      if(err.message.includes('รหัสผ่าน')||err.message.includes('Key')||err.message.includes('ตั้งค่า')){
-        setSettingsModal(true);
+      if(err.message.includes('รหัสผ่าน')||err.message.includes('Key')||err.message.includes('ห้องเรียน')){
+        setClassroomModal(true);
       }
     }finally{
       setAiLoading(false);
@@ -191,6 +226,12 @@ function App(){
       notify('กรุณากรอกหรือวางบทพูดที่ต้องการให้ AI ช่วยเกลาในพื้นที่เขียนบทก่อน');
       return;
     }
+    const activePasscode = classroomSession.entered ? classroomSession.passcode : (aiSettings.passcode || '');
+    if(!activePasscode && !aiSettings.customApiKey){
+      setClassroomModal(true);
+      notify('กรุณากรอกรหัสห้องเรียนที่ได้รับจากครูเด่นเพื่อเริ่มใช้งาน AI');
+      return;
+    }
     setAiLoading(true);
     setAiAction(action);
     try{
@@ -198,12 +239,12 @@ function App(){
         method:'POST',
         headers:{
           'Content-Type':'application/json',
-          ...(aiSettings.passcode?{'X-Student-Passcode':aiSettings.passcode}:{})
+          ...(activePasscode?{'X-Student-Passcode':activePasscode}:{})
         },
         body:JSON.stringify({
           prompt:`หัวข้อ: ${data.form.topic||'ไม่ระบุ'}\nรูปแบบเวที: ${modeFor(data.form.mode).name}\n\nเนื้อหาบทพูด:\n${data.script}`,
           action,
-          passcode:aiSettings.passcode,
+          passcode:activePasscode,
           customApiKey:aiSettings.customApiKey
         })
       });
@@ -215,8 +256,8 @@ function App(){
       notify('AI ประมวลผลและเกลาคำพูดให้เรียบร้อยแล้ว');
     }catch(err){
       notify('ข้อผิดพลาด AI: '+err.message);
-      if(err.message.includes('รหัสผ่าน')||err.message.includes('Key')||err.message.includes('ตั้งค่า')){
-        setSettingsModal(true);
+      if(err.message.includes('รหัสผ่าน')||err.message.includes('Key')||err.message.includes('ห้องเรียน')){
+        setClassroomModal(true);
       }
     }finally{
       setAiLoading(false);
@@ -331,9 +372,36 @@ function App(){
             <strong>{active[2]}</strong>
           </div>
           <div className="topbar-right">
-            <button className="btn" style={{padding:'6px 12px',fontSize:'11px'}} onClick={()=>setSettingsModal(true)} title="ตั้งค่ารหัสห้องเรียนหรือ API Key">
-              <KeyRound size={14}/> {aiSettings.passcode||aiSettings.customApiKey?'ตั้งค่า AI (เชื่อมต่อแล้ว)':'เข้าใช้งาน AI / รหัสคลาส'}
+            {classroomSession.entered ? (
+              <div
+                className="classroom-badge"
+                title="คลิกเพื่อดูรายละเอียดห้องเรียนหรือออกจากระบบ"
+                onClick={()=>setClassroomModal(true)}
+                style={{cursor:'pointer'}}
+              >
+                <span className="classroom-dot"/>
+                <span>ห้องเรียน: <strong>{classroomSession.studentName ? `${classroomSession.studentName} (${classroomSession.passcode})` : classroomSession.passcode}</strong></span>
+              </div>
+            ) : (
+              <button
+                className="btn primary"
+                style={{padding:'6px 14px',fontSize:'11px'}}
+                onClick={()=>setClassroomModal(true)}
+                title="กรอกรหัสเข้าห้องเรียนที่ได้รับจากครูเด่น"
+              >
+                <KeyRound size={14}/> รหัสเข้าห้องเรียน
+              </button>
+            )}
+
+            <button
+              className="btn"
+              style={{padding:'6px 12px',fontSize:'11px'}}
+              onClick={()=>setAdminModal(true)}
+              title="แผงควบคุมครูเด่น (Admin ออกรหัสห้องเรียน)"
+            >
+              <ShieldCheck size={14}/> ครูเด่น (Admin)
             </button>
+
             <span className="saved-indicator">
               <CheckCircle2 size={14}/> {storageError?'รอสำรองข้อมูล':'บันทึกอัตโนมัติ'}
             </span>
@@ -1109,6 +1177,32 @@ function App(){
       }}
     />}
 
+    {classroomModal&&<ClassroomGateModal
+      session={classroomSession}
+      onEnter={s=>{
+        saveClassroomSession(s);
+        setClassroomSession(s);
+        notify(`ยินดีต้อนรับคุณ ${s.studentName} เข้าสู่ห้องเรียน`);
+      }}
+      onExit={()=>{
+        clearClassroomSession();
+        setClassroomSession({entered:false,studentName:'',passcode:'',className:'',role:'guest'});
+        notify('ออกจากห้องเรียนเรียบร้อยแล้ว');
+      }}
+      onClose={()=>setClassroomModal(false)}
+      onOpenAdmin={()=>setAdminModal(true)}
+    />}
+
+    {adminModal&&<AdminConsoleModal
+      classes={adminClasses}
+      onSaveClasses={updated=>{
+        saveAdminClasses(updated);
+        setAdminClasses(updated);
+      }}
+      onClose={()=>setAdminModal(false)}
+      onNotify={notify}
+    />}
+
     {settingsModal&&<SettingsModal
       settings={aiSettings}
       onClose={()=>setSettingsModal(false)}
@@ -1120,6 +1214,342 @@ function App(){
       }}
     />}
   </>;
+}
+
+function ClassroomGateModal({session,onEnter,onExit,onClose,onOpenAdmin}){
+  const [passcode,setPasscode]=useState(session.passcode||'');
+  const [studentName,setStudentName]=useState(session.studentName||'');
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState('');
+
+  const handleSubmit=async(e)=>{
+    e.preventDefault();
+    const code=passcode.trim();
+    if(!code){
+      setError('กรุณาระบุรหัสผ่านห้องเรียน');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try{
+      const res=await fetch('/api/verify-passcode',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({passcode:code})
+      });
+      const json=await res.json();
+      if(!res.ok||!json.valid){
+        throw Error(json.error||'รหัสผ่านห้องเรียนไม่ถูกต้อง');
+      }
+      onEnter({
+        entered:true,
+        studentName:studentName.trim()||'ผู้เรียน',
+        passcode:code,
+        className:json.className||'Public Speaking & MC Skills',
+        role:json.role||'student'
+      });
+      onClose();
+    }catch(err){
+      setError(err.message);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  return <Modal title="เข้าสู่ห้องเรียน KRUDEN Speaking Studio" onClose={onClose}>
+    <form className="form-stack" onSubmit={handleSubmit}>
+      <div style={{background:'#edf4ea',border:'1px solid #cce2c7',padding:'16px',borderRadius:'10px',fontSize:'12px',lineHeight:'1.6',color:'#1e4732'}}>
+        <strong style={{fontSize:'13px'}}>🎤 พื้นที่ฝึกปฏิบัติการพูดและพิธีกร</strong>
+        <p style={{margin:'6px 0 0'}}>
+          กรุณากรอก <strong>รหัสผ่านห้องเรียน (Passcode)</strong> ที่ครูเด่นมอบให้ในคลาส เพื่อปลดล็อกการใช้งาน Script Lab, ซีเคว้นพิธีกร และระบบ DeepSeek AI
+        </p>
+      </div>
+
+      {session.entered&&(
+        <div style={{background:'#eef2fb',border:'1px solid #c7d7f7',padding:'12px 14px',borderRadius:'8px',fontSize:'12px',display:'flex',alignItems:'center',justifyContent:'space-between',color:'#20407a'}}>
+          <div>
+            <strong>เข้าห้องเรียนแล้ว: {session.studentName}</strong>
+            <small style={{display:'block',color:'#506a9c'}}>รหัสห้องเรียน: {session.passcode}</small>
+          </div>
+          <button type="button" className="btn" style={{padding:'4px 10px',fontSize:'11px'}} onClick={onExit}>
+            ออกจากห้องเรียน
+          </button>
+        </div>
+      )}
+
+      <label>
+        รหัสผ่านห้องเรียน (Classroom Passcode)
+        <input
+          required
+          type="text"
+          maxLength={100}
+          value={passcode}
+          onChange={e=>setPasscode(e.target.value)}
+          placeholder="เช่น KD-MC14 หรือรหัสที่ได้รับจากครูเด่น"
+          style={{fontSize:'14px',letterSpacing:'1px',fontWeight:'bold'}}
+        />
+        <small>รหัสห้องเรียนออกโดยครูเด่น มาสเตอร์ฟา สำหรับแต่ละรุ่นการอบรม</small>
+      </label>
+
+      <label>
+        ชื่อของคุณ / ชื่อเล่น (สำหรับแสดงในเอกสารสคริปต์)
+        <input
+          type="text"
+          maxLength={100}
+          value={studentName}
+          onChange={e=>setStudentName(e.target.value)}
+          placeholder="เช่น น้องเด่น, คุณนัท"
+        />
+      </label>
+
+      {error&&<div style={{background:'#fbeeed',border:'1px solid #e8b8b3',color:'#842a22',padding:'10px 14px',borderRadius:'6px',fontSize:'12px'}}>
+        {error}
+      </div>}
+
+      <div className="toolbar" style={{marginTop:'12px',justifyContent:'space-between'}}>
+        <button type="button" className="btn" style={{fontSize:'11px'}} onClick={()=>{onClose();onOpenAdmin();}}>
+          <ShieldCheck size={14}/> เข้าสู่ระบบ Admin (ครูเด่น)
+        </button>
+        <div className="toolbar">
+          <button type="button" className="btn" onClick={onClose}>ปิด</button>
+          <button type="submit" className="btn primary" disabled={loading}>
+            {loading?<Loader2 className="spin" size={16}/>:<Check size={16}/>}
+            {loading?'กำลังตรวจสอบ...':'เข้าสู่ห้องเรียน'}
+          </button>
+        </div>
+      </div>
+    </form>
+  </Modal>;
+}
+
+function AdminConsoleModal({classes,onSaveClasses,onClose,onNotify}){
+  const [unlocked,setUnlocked]=useState(false);
+  const [adminKey,setAdminKey]=useState('');
+  const [authError,setAuthError]=useState('');
+  const [verifying,setVerifying]=useState(false);
+
+  // New class form
+  const [newClassName,setNewClassName]=useState('');
+  const [newClassCode,setNewClassCode]=useState('');
+
+  const handleUnlock=async(e)=>{
+    e.preventDefault();
+    setVerifying(true);
+    setAuthError('');
+    try{
+      const res=await fetch('/api/verify-passcode',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({adminKey:adminKey.trim()})
+      });
+      const json=await res.json();
+      if(!res.ok||!json.valid){
+        throw Error(json.error||'รหัสผู้ดูแลระบบไม่ถูกต้อง');
+      }
+      setUnlocked(true);
+      onNotify('เข้าสู่แผงควบคุมครูเด่น (Admin) สำเร็จ');
+    }catch(err){
+      setAuthError(err.message);
+    }finally{
+      setVerifying(false);
+    }
+  };
+
+  const generateRandomCode=()=>{
+    const rand=Math.random().toString(36).substring(2,6).toUpperCase();
+    setNewClassCode(`KD-MC${new Date().getMonth()+1}-${rand}`);
+  };
+
+  const handleAddClass=(e)=>{
+    e.preventDefault();
+    if(!newClassName.trim()||!newClassCode.trim())return;
+    const item={
+      id:`class-${newId()}`,
+      name:newClassName.trim(),
+      code:newClassCode.trim().toUpperCase(),
+      active:true,
+      createdAt:new Date().toISOString().split('T')[0]
+    };
+    const updated=[item,...classes];
+    onSaveClasses(updated);
+    setNewClassName('');
+    setNewClassCode('');
+    onNotify(`ออกรหัสห้องเรียน "${item.code}" เรียบร้อยแล้ว`);
+  };
+
+  const toggleClass=(id)=>{
+    const updated=classes.map(c=>c.id===id?{...c,active:!c.active}:c);
+    onSaveClasses(updated);
+  };
+
+  const deleteClass=(id)=>{
+    if(!window.confirm('ลบรหัสห้องเรียนนี้?'))return;
+    const updated=classes.filter(c=>c.id!==id);
+    onSaveClasses(updated);
+    onNotify('ลบรหัสห้องเรียนแล้ว');
+  };
+
+  const copyShareLink=(cls)=>{
+    const url=`${window.location.origin}/?code=${cls.code}&class=${encodeURIComponent(cls.name)}`;
+    const text=`🎤 ยินดีต้อนรับสู่ห้องเรียน KRUDEN Speaking Studio\nคลาส: ${cls.name}\nคลิกเข้าห้องเรียนอัตโนมัติ: ${url}\n(รหัสเข้าห้อง: ${cls.code})`;
+    navigator.clipboard.writeText(text).then(()=>{
+      onNotify(`คัดลอกข้อความเชิญเข้าคลาส "${cls.name}" เรียบร้อยแล้ว นำไปวางใน LINE ได้เลย`);
+    });
+  };
+
+  if(!unlocked){
+    return <Modal title="🛡️ แผงควบคุมครูเด่น (Admin Authentication)" onClose={onClose}>
+      <form className="form-stack" onSubmit={handleUnlock}>
+        <div style={{background:'#edf4ea',border:'1px solid #cbe1c7',padding:'16px',borderRadius:'10px',fontSize:'12px',color:'#1f4732'}}>
+          <strong>ระบบจัดการรหัสผ่านห้องเรียนสำหรับผู้สอน</strong>
+          <p style={{margin:'4px 0 0'}}>
+            ส่วนนี้สำหรับครูเด่น มาสเตอร์ฟา ในการออกรหัสผ่านห้องเรียนและสร้างลิงก์เชิญส่งให้ผู้เรียน
+          </p>
+        </div>
+        <label>
+          รหัสผ่านผู้ดูแลระบบ (Admin Master Key)
+          <input
+            required
+            type="password"
+            maxLength={100}
+            value={adminKey}
+            onChange={e=>setAdminKey(e.target.value)}
+            placeholder="กรอกรหัส Admin ของครูเด่น"
+          />
+          <small>รหัสเริ่มต้นคือ KD-MASTER หรือตามที่ตั้งไว้ในระบบ</small>
+        </label>
+        {authError&&<div style={{background:'#fbeeed',border:'1px solid #e8b8b3',color:'#842a22',padding:'10px 14px',borderRadius:'6px',fontSize:'12px'}}>
+          {authError}
+        </div>}
+        <div className="toolbar" style={{marginTop:'12px',justifyContent:'flex-end'}}>
+          <button type="button" className="btn" onClick={onClose}>ยกเลิก</button>
+          <button type="submit" className="btn primary" disabled={verifying}>
+            {verifying?<Loader2 className="spin" size={16}/>:<ShieldCheck size={16}/>}
+            เข้าสู่แผงควบคุม
+          </button>
+        </div>
+      </form>
+    </Modal>;
+  }
+
+  return <Modal title="🛡️ จัดการรหัสห้องเรียน (ครูเด่น Admin Console)" onClose={onClose}>
+    <div className="form-stack">
+      {/* Create New Passcode */}
+      <div style={{background:'#fcfdfa',border:'1px solid #dbe5d8',borderRadius:'10px',padding:'18px'}}>
+        <strong style={{fontSize:'13px',color:'#183f34'}}>✨ ออกรหัสผ่านห้องเรียนใหม่</strong>
+        <form onSubmit={handleAddClass} style={{display:'flex',flexDirection:'column',gap:'12px',marginTop:'12px'}}>
+          <div className="form-row">
+            <label>
+              ชื่อรุ่น / ห้องเรียน
+              <input
+                required
+                maxLength={200}
+                value={newClassName}
+                onChange={e=>setNewClassName(e.target.value)}
+                placeholder="เช่น Workshop Public Speaking รุ่นที่ 15"
+              />
+            </label>
+            <label>
+              รหัสผ่านห้องเรียน
+              <div style={{display:'flex',gap:'6px'}}>
+                <input
+                  required
+                  maxLength={50}
+                  value={newClassCode}
+                  onChange={e=>setNewClassCode(e.target.value)}
+                  placeholder="เช่น KD-MC15"
+                  style={{fontWeight:'bold'}}
+                />
+                <button type="button" className="btn" onClick={generateRandomCode} title="สุ่มรหัสผ่านอัตโนมัติ">
+                  สุ่ม
+                </button>
+              </div>
+            </label>
+          </div>
+          <div style={{display:'flex',justifyContent:'flex-end'}}>
+            <button type="submit" className="btn primary">
+              <Plus size={16}/> ออกรหัสห้องเรียนนี้
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Issued Passcodes List */}
+      <div>
+        <strong style={{fontSize:'13px',color:'#183f34'}}>📋 คลังรหัสห้องเรียนที่ออกแล้ว ({classes.length})</strong>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>รหัสผ่าน</th>
+              <th>ชื่อรุ่น / ห้องเรียน</th>
+              <th>วันที่ออก</th>
+              <th>สถานะ</th>
+              <th style={{textAlign:'right'}}>ลิงก์เชิญ & จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {classes.map(c=>(
+              <tr key={c.id}>
+                <td>
+                  <span className="code-pill">{c.code}</span>
+                </td>
+                <td>
+                  <strong>{c.name}</strong>
+                </td>
+                <td style={{color:'var(--muted)'}}>{c.createdAt||'-'}</td>
+                <td>
+                  <span style={{
+                    display:'inline-block',
+                    padding:'2px 8px',
+                    borderRadius:'10px',
+                    fontSize:'10px',
+                    background:c.active?'#edf5ea':'#f5eceb',
+                    color:c.active?'#245e3d':'#943a32',
+                    fontWeight:600
+                  }}>
+                    {c.active?'เปิดใช้งาน':'ปิดชั่วคราว'}
+                  </span>
+                </td>
+                <td style={{textAlign:'right'}}>
+                  <div className="toolbar" style={{justifyContent:'flex-end'}}>
+                    <button
+                      type="button"
+                      className="btn primary"
+                      style={{padding:'4px 10px',fontSize:'11px'}}
+                      onClick={()=>copyShareLink(c)}
+                      title="คัดลอกข้อความเชิญพร้อมลิงก์นำไปส่งใน LINE"
+                    >
+                      <Copy size={13}/> คัดลอกลิงก์ส่งนักเรียน
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={()=>toggleClass(c.id)}
+                      title={c.active?'คลิกเพื่อปิดการใช้งานชั่วคราว':'คลิกเพื่อเปิดใช้งาน'}
+                    >
+                      <RotateCcw size={15}/>
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn danger"
+                      onClick={()=>deleteClass(c.id)}
+                      title="ลบรหัสห้องเรียนนี้"
+                    >
+                      <Trash2 size={15}/>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="toolbar" style={{justifyContent:'flex-end',marginTop:'14px'}}>
+        <button type="button" className="btn" onClick={onClose}>ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </Modal>;
 }
 
 function SettingsModal({settings,onSave,onClose}){

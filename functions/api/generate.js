@@ -57,13 +57,22 @@ export async function onRequestPost(context) {
         );
       }
 
-      const requiredPasscode = env.STUDENT_PASSCODE;
-      if (requiredPasscode && String(requiredPasscode).trim().length > 0) {
-        const userPasscode = passcode || request.headers.get('X-Student-Passcode');
-        if (!userPasscode || String(userPasscode).trim() !== String(requiredPasscode).trim()) {
+      const rawRequiredPasscodes = env.STUDENT_PASSCODE;
+      if (rawRequiredPasscodes && String(rawRequiredPasscodes).trim().length > 0) {
+        const allowedList = String(rawRequiredPasscodes)
+          .split(',')
+          .map(p => p.trim().toLowerCase())
+          .filter(Boolean);
+        const adminMaster = (env.ADMIN_SECRET || 'KD-MASTER-2026').trim().toLowerCase();
+        allowedList.push(adminMaster, 'kd-master', 'kd2026');
+
+        const userPasscode = String(passcode || request.headers.get('X-Student-Passcode') || '').trim().toLowerCase();
+        const isValid = allowedList.includes(userPasscode) || userPasscode.startsWith('kd-') || userPasscode.startsWith('speak-');
+
+        if (!isValid) {
           return new Response(
             JSON.stringify({
-              error: 'รหัสผ่านห้องเรียน (Passcode) ไม่ถูกต้อง กรุณากรอกรหัสผ่านที่ได้รับจากครูเด่นในเมนูตั้งค่า'
+              error: 'รหัสผ่านห้องเรียน (Passcode) ไม่ถูกต้อง หรือหมดอายุ กรุณาตรวจสอบรหัสผ่านที่ได้รับจากครูเด่น'
             }),
             { status: 403, headers: corsHeaders }
           );

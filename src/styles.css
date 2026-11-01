@@ -55,6 +55,17 @@
 .seq-actions .icon-btn{width:28px;height:28px}
 .print-cue-sheet{display:none}
 
+.classroom-badge{display:inline-flex;align-items:center;gap:8px;background:#edf5ea;border:1px solid #c8ddc2;color:#1e4c34;padding:6px 12px;border-radius:20px;font-size:11px}
+.classroom-badge strong{color:#133c27;font-weight:600}
+.classroom-dot{width:7px;height:7px;background:#3ea861;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+.code-pill{font-family:Prompt,monospace;background:#f3f6ee;border:1px solid #d5dfd1;padding:3px 8px;border-radius:4px;font-weight:600;color:#1e4732;letter-spacing:1px}
+.share-link-box{background:#f7faf5;border:1px dashed #bed4ba;padding:12px 14px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.share-link-box code{font-size:11px;color:#274f37;word-break:break-all}
+.admin-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.admin-table th{background:#f3f6ee;color:#274c37;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.admin-table td{padding:10px 12px;border-bottom:1px solid #edf0ea;vertical-align:middle}
+
 @media print{
   @page{size:landscape;margin:10mm}
   html,body{background:white!important;color:#111!important;margin:0;padding:0;overflow:visible}
