@@ -66,3 +66,4 @@ Write-Host "Saved: $publicDir\favicon.ico"
 $squareBmp.Dispose()
 $srcImg.Dispose()
 Write-Host "Favicons generated successfully!"
+
